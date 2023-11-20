@@ -3,12 +3,12 @@
 ### Cerințe funcționale
 1. Fiecare utilizator poate selecta din interfața programului său (CLI) domeniile preferate (0..3).
 
-2. Un utilizator poate:
-	a.<br /> introduce o nouă știre care va fi transmisă celor interesați
-	b.<br />introduce un flux mare de știri (~ 1000 mesaje)
-	c.<br /> afișa ultimele N știri dintr-un anumit domeniu
-	d.<br /> șterge din sistem o știre (introdusă de el)
-	e.<br /> intra sau ieși oricând din sistem
+2. Un utilizator poate:<br /> 
+	a. introduce o nouă știre care va fi transmisă celor interesați<br />
+	b. introduce un flux mare de știri (~ 1000 mesaje)<br /> 
+	c. afișa ultimele N știri dintr-un anumit domeniu<br /> 
+	d. șterge din sistem o știre (introdusă de el)<br /> 
+	e. intra sau ieși oricând din sistem
 
 3. Dacă o știre nou introdusă există deja în sistem, ea va fi ignorată.
 
