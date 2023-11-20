@@ -26,6 +26,6 @@ sistem la fiecare relansare).
 
 4. Se va evidenția toleranța la defectare.
 
-5. Se va implementa un sistem de log-uri pentru a se urmări mesajele d
+5. Se va implementa un sistem de log-uri pentru a se urmări mesajele din sistem.
 
-
+6. Numărul de utilizatori din sistem este variabil (nu este fixat apriori)
