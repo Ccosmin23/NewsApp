@@ -47,5 +47,5 @@ public class InterfataAbonat {
         scannerTastatura.close();
     }
 
-    public InterfataPublisher () {}
+    public InterfataAbonat () {}
 }
