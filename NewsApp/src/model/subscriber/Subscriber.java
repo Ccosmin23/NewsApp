@@ -9,6 +9,6 @@ public class Subscriber extends User implements SubscriberInterface {
 
     @Override
     public void receiveNews() {
-        
+
     }
 }
