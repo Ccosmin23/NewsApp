@@ -4,10 +4,10 @@
 1. Fiecare utilizator poate selecta din interfața programului său (CLI) domeniile preferate (0..3).
 
 2. Un utilizator poate:
-	a. introduce o nouă știre care va fi transmisă celor interesați
-	b. introduce un flux mare de știri (~ 1000 mesaje)
-	c. afișa ultimele N știri dintr-un anumit domeniu
-	d. șterge din sistem o știre (introdusă de el)
+	a.__ introduce o nouă știre care va fi transmisă celor interesați
+	b.__ introduce un flux mare de știri (~ 1000 mesaje)
+	c.__ afișa ultimele N știri dintr-un anumit domeniu
+	d.__ șterge din sistem o știre (introdusă de el)
 	e. intra sau ieși oricând din sistem
 
 3. Dacă o știre nou introdusă există deja în sistem, ea va fi ignorată.
