@@ -29,3 +29,7 @@ sistem la fiecare relansare).
 5. Se va implementa un sistem de log-uri pentru a se urmări mesajele din sistem.
 
 6. Numărul de utilizatori din sistem este variabil (nu este fixat apriori)
+
+
+
+
