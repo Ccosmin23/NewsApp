@@ -1,3 +1,9 @@
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+
+import architecture.Broker;
 import ui.InterfataAbonat;
 import ui.InterfataPublisher;
 
@@ -31,7 +37,22 @@ public class Main {
             }
 
             case "broker": {
-                // TODO: De implementat partea de broker
+                ArrayList<InetAddress> adreseRetea = new ArrayList<>();
+
+                try {
+                    adreseRetea.add(InetAddress.getByName("192.168.30.4"));
+                    adreseRetea.add(InetAddress.getByName("192.168.30.7"));
+                    adreseRetea.add(InetAddress.getByName("192.168.30.9"));
+                    adreseRetea.add(InetAddress.getByName("192.168.30.10"));
+                    adreseRetea.add(InetAddress.getByName("192.168.30.12"));
+
+                    Broker masina = new Broker(adreseRetea);
+                    masina.start();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
                 break;
             }
 
