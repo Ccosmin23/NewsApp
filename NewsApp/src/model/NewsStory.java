@@ -1,12 +1,18 @@
 package model;
 
-public class NewsStory {
-    private Integer id;
-    private String title;
+import java.io.Serializable;
 
-    public NewsStory(Integer id, String title) {
+public class NewsStory implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private Integer id;
+    private String titlu;
+    private String continut;
+
+    public NewsStory(Integer id, String titlu, String continut) {
         this.id = id;
-        this.title = title;
+        this.titlu = titlu;
+        this.continut = continut;
     }
 
     public Integer getId() {
@@ -17,11 +23,19 @@ public class NewsStory {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitlu() {
+        return titlu;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitlu(String titlu) {
+        this.titlu = titlu;
+    }
+
+    public String getContinut () {
+        return this.continut;
+    }
+
+    public void setContinut (String continut) {
+        this.continut = continut;
     }
 }
