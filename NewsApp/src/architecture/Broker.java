@@ -27,18 +27,26 @@ public class Broker {
     ArrayList<InetAddress> adreseNoduri;
     AtomicBoolean ruleaza;
 
-    public void send (InetAddress destinatie) {
+    public void send (InetAddress destinatie) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
+            ObjectInputStream ois;
             TestData msg = new TestData("Hello", destinatie);
+            TestData raspuns;
             Socket socketComuicare = new Socket(nodUrmator, 9700);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
+            ois = new ObjectInputStream(socketComuicare.getInputStream());
+
             oos.writeObject(msg);
             oos.flush();
 
-            socketComuicare.close();
+            raspuns = (TestData) ois.readObject();
+            System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
+
             oos.close();
+            ois.close();
+            socketComuicare.close();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -53,11 +61,9 @@ public class Broker {
                 Socket clientSocket;
                 DataInputStream clientIStream;
                 DataOutputStream clientOStream;
-                PrintWriter writer;
+                ObjectOutputStream oos;
                 ObjectInputStream ois;
-                ByteArrayInputStream bis;
                 TestData mesajReceptionat;
-                byte[] date;
 
                 try {
                     receiverSocket = new ServerSocket(9700);
@@ -68,29 +74,49 @@ public class Broker {
 
                             clientIStream = new DataInputStream(clientSocket.getInputStream());
                             clientOStream = new DataOutputStream(clientSocket.getOutputStream());
-                            writer = new PrintWriter(clientOStream, true);
 
-                            date = clientIStream.readAllBytes();
-                            bis = new ByteArrayInputStream(date);
-                            ois = new ObjectInputStream(bis);
+                            ois = new ObjectInputStream(clientIStream);
+                            oos = new ObjectOutputStream(clientOStream);
 
                             mesajReceptionat = (TestData) ois.readObject();
 
-                            if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
-                                System.out.println("Sunt eu!");
-                                writer.println("Sunt eu. Mulțumesc!");
-                            } else {
-                                System.out.println("Nu sunt eu!");
-                                writer.println("Nu sunt eu");
-                                System.out.println(mesajReceptionat.primesteAdresa() + "  " + adresaPersonala);
-                                Thread.sleep(500);
-                                send(mesajReceptionat.primesteAdresa());
+                            System.out.println(mesajReceptionat.primesteComanda());
+                            switch (mesajReceptionat.primesteComanda()) {
+                                case "publica": {
+                                    TestData raspuns = new TestData("Ti-am receptionat publicarea!", adresaPersonala);
+
+                                    System.out.println("Am primit mesaj de la PUBLISHER (publicator)!");
+                                    oos.writeObject(raspuns);
+                                    break;
+                                }
+
+                                case "articole": {
+                                    TestData raspuns = new TestData("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
+
+                                    System.out.println("Am primit mesaj de la SUBSCRIBER (abonat)!");
+                                    oos.writeObject(raspuns);
+                                    break;
+                                }
+
+                                default: {
+                                    if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
+                                        TestData raspuns = new TestData("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
+
+                                        System.out.println("Sunt eu!");
+                                        oos.writeObject(raspuns);
+                                    } else {
+                                        TestData raspuns = new TestData("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
+
+                                        System.out.println("Nu sunt eu!");
+                                        oos.writeObject(raspuns);
+                                        Thread.sleep(500);
+                                        send(mesajReceptionat.primesteAdresa());
+                                    }
+                                }
                             }
 
-                            bis.close();
                             ois.close();
-                            clientIStream.close();
-                            clientOStream.close();
+                            oos.close();
                             clientSocket.close();
                         } catch (SocketException e) {
                             System.out.println(e.getMessage());
@@ -146,7 +172,11 @@ public class Broker {
             Console consola = System.console();
             switch (consola.readLine("-> ")) {
                 case "s": {
-                    send(InetAddress.getByName("192.168.30.10"));
+                    try {
+                        send(InetAddress.getByName("192.168.30.10"));
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 }
 
