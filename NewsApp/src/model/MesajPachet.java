@@ -10,6 +10,7 @@ public class MesajPachet implements Serializable {
     private String comanda;
     private InetAddress destinatie;
     private NewsStory stire;
+    private NewsField listaStiri;
 
     public NewsStory primesteStirea () {
         return this.stire;
@@ -17,6 +18,14 @@ public class MesajPachet implements Serializable {
 
     public void seteazaStirea (NewsStory stirea) {
         this.stire = stirea;
+    }
+
+    public NewsField primesteListaStiri () {
+        return this.listaStiri;
+    }
+
+    public void seteazaListaStiri (NewsField listaStiri) {
+        this.listaStiri = listaStiri;
     }
 
     public String primesteMesaj () {

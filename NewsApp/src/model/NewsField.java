@@ -1,17 +1,19 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
-public class NewsField {
+public class NewsField implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Integer id;
     private String title;
-    private List<NewsStory> newsStoryList = new ArrayList<NewsStory>();
+    private ArrayList<NewsStory> newsStoryList;
 
-    public NewsField(Integer id, String title, List<NewsStory> newsStoryList) {
+    public NewsField(Integer id, String title) {
         this.id = id;
         this.title = title;
-        this.newsStoryList = newsStoryList;
+        this.newsStoryList = new ArrayList<NewsStory>();
     }
 
     public Integer getId() {
@@ -30,12 +32,16 @@ public class NewsField {
         this.title = title;
     }
 
-    public List<NewsStory> getNewsStoryList() {
+    public ArrayList<NewsStory> getNewsStoryList() {
         return newsStoryList;
     }
 
-    public void setNewsStoryList(List<NewsStory> newsStoryList) {
+    public void setNewsStoryList(ArrayList<NewsStory> newsStoryList) {
         this.newsStoryList = newsStoryList;
+    }
+
+    public void adaugaStire (NewsStory stire) {
+        this.newsStoryList.add(stire);
     }
 }
 
