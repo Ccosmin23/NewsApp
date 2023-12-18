@@ -1,13 +1,11 @@
 package architecture;
 
-import java.io.ByteArrayInputStream;
 import java.io.Console;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -18,7 +16,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import model.TestData;
+import model.MesajPachet;
+import model.NewsField;
 
 public class Broker {
     InetAddress adresaPersonala;
@@ -26,13 +25,14 @@ public class Broker {
     ServerSocket receiverSocket;
     ArrayList<InetAddress> adreseNoduri;
     AtomicBoolean ruleaza;
+    NewsField listaStiri;
 
     public void send (InetAddress destinatie) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            TestData msg = new TestData("Hello", destinatie);
-            TestData raspuns;
+            MesajPachet msg = new MesajPachet("Hello", destinatie);
+            MesajPachet raspuns;
             Socket socketComuicare = new Socket(nodUrmator, 9700);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
@@ -41,7 +41,7 @@ public class Broker {
             oos.writeObject(msg);
             oos.flush();
 
-            raspuns = (TestData) ois.readObject();
+            raspuns = (MesajPachet) ois.readObject();
             System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
 
             oos.close();
@@ -63,7 +63,7 @@ public class Broker {
                 DataOutputStream clientOStream;
                 ObjectOutputStream oos;
                 ObjectInputStream ois;
-                TestData mesajReceptionat;
+                MesajPachet mesajReceptionat;
 
                 try {
                     receiverSocket = new ServerSocket(9700);
@@ -78,12 +78,13 @@ public class Broker {
                             ois = new ObjectInputStream(clientIStream);
                             oos = new ObjectOutputStream(clientOStream);
 
-                            mesajReceptionat = (TestData) ois.readObject();
+                            mesajReceptionat = (MesajPachet) ois.readObject();
 
                             System.out.println(mesajReceptionat.primesteComanda());
                             switch (mesajReceptionat.primesteComanda()) {
                                 case "publica": {
-                                    TestData raspuns = new TestData("Ti-am receptionat publicarea!", adresaPersonala);
+                                    MesajPachet raspuns = new MesajPachet("Ti-am receptionat publicarea!", adresaPersonala);
+                                    listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
 
                                     System.out.println("Am primit mesaj de la PUBLISHER (publicator)!");
                                     oos.writeObject(raspuns);
@@ -91,7 +92,9 @@ public class Broker {
                                 }
 
                                 case "articole": {
-                                    TestData raspuns = new TestData("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
+                                    MesajPachet raspuns = new MesajPachet("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
+
+                                    raspuns.seteazaListaStiri(listaStiri);
 
                                     System.out.println("Am primit mesaj de la SUBSCRIBER (abonat)!");
                                     oos.writeObject(raspuns);
@@ -100,12 +103,12 @@ public class Broker {
 
                                 default: {
                                     if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
-                                        TestData raspuns = new TestData("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
+                                        MesajPachet raspuns = new MesajPachet("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
 
                                         System.out.println("Sunt eu!");
                                         oos.writeObject(raspuns);
                                     } else {
-                                        TestData raspuns = new TestData("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
+                                        MesajPachet raspuns = new MesajPachet("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
 
                                         System.out.println("Nu sunt eu!");
                                         oos.writeObject(raspuns);
@@ -202,5 +205,6 @@ public class Broker {
 
     public Broker (ArrayList<InetAddress> listaAdreseMasini) {
         this.adreseNoduri = listaAdreseMasini;
+        this.listaStiri = new NewsField(1, "Stiri");
     }
 }

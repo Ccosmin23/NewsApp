@@ -4,8 +4,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import architecture.Broker;
-import ui.InterfataAbonat;
-import ui.InterfataPublisher;
+import architecture.Publisher;
+import architecture.Subscriber;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,20 +19,26 @@ public class Main {
 
         switch (args[0]) {
             case "publisher": {
-                System.out.println("Hello world!");
-                InterfataPublisher uiPublisher = new InterfataPublisher();
+                Publisher masina = new Publisher();
 
-                uiPublisher.afiseazaInterfata();
-                uiPublisher.inchideInterfata();
+                try {
+                    masina.start();
+                } catch (UnknownHostException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+
                 break;
             }
 
             case "subscriber": {
-                System.out.println("Hello world!");
-                InterfataAbonat uiAbonat = new InterfataAbonat();
-
-                uiAbonat.afiseazaInterfata();
-                uiAbonat.inchideInterfata();
+                Subscriber masina = new Subscriber();
+                
+                try {
+                    masina.start();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+                
                 break;
             }
 

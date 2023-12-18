@@ -3,10 +3,12 @@ package ui;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import model.NewsStory;
+
 public class InterfataPublisher {
     public Scanner scannerTastatura;
 
-    public void afiseazaInterfata () {
+    public String afiseazaInterfata () {
         String optiune;
         
         scannerTastatura = new Scanner(System.in);
@@ -19,28 +21,15 @@ public class InterfataPublisher {
         System.out.print("Optiunea dorita: ");
         optiune = scannerTastatura.nextLine();
 
-        switch (optiune) {
-            case "c": {
-                creeazaArticol();
-                break;
-            }
-
-            case "g": {
-                genereazaArticole();
-                break;
-            }
-
-            case "x": {
-                // Închidere program
-            }
-        }
+        return optiune;
     }
 
-    public void creeazaArticol () {
+    public NewsStory creeazaArticol () {
         String titluArticol;
         ArrayList<String> listaLinii;
         String linieCaractere;
         String continut = "";
+        NewsStory articolStire = null;
 
         System.out.println("Scrieti titlul articolului");
         titluArticol = scannerTastatura.nextLine();
@@ -48,13 +37,16 @@ public class InterfataPublisher {
         // Dacă nu s-a dat titlul articolului, atunci
         // se consideră anularea operației
         if (titluArticol.length() == 0) {
-            return;
+            return null;
         }
 
         listaLinii = new ArrayList<String>();
+
         System.out.println("Scrieti continutul articolului");
         linieCaractere = scannerTastatura.nextLine();
 
+        // Atâta timp cât utilizatorul scrie conținutul știrei,
+        // adaugă noi linii pentru conținutul știrii
         while (linieCaractere.length() != 0) {
             listaLinii.add(linieCaractere);
             linieCaractere = scannerTastatura.nextLine();
@@ -65,7 +57,12 @@ public class InterfataPublisher {
                 continut += linie + "\n";    
             }
 
-            System.out.print(continut);
+            articolStire = new NewsStory(0, titluArticol, continut);
+            return articolStire;
+        } else {
+            // Dacă o știre cu un titlu dar fără conținut a fost creat, atunci
+            // nu se consideră introducerea știrei în sistem.
+            return null;
         }
     }
 
