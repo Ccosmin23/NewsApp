@@ -54,6 +54,32 @@ public class Broker {
         }
     }
 
+    public void replicaArticolLaVecin (MesajPachet pachetReplica) throws ClassNotFoundException {
+        try {
+            ObjectOutputStream oos;
+            ObjectInputStream ois;
+            MesajPachet raspuns;
+            Socket socketComuicare = new Socket(nodUrmator, 9700);
+
+            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
+            ois = new ObjectInputStream(socketComuicare.getInputStream());
+
+            oos.writeObject(pachetReplica);
+            oos.flush();
+
+            raspuns = (MesajPachet) ois.readObject();
+            System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
+
+            oos.close();
+            ois.close();
+            socketComuicare.close();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public Thread receive () {
         return new Thread(new Runnable() {
             @Override
@@ -84,10 +110,18 @@ public class Broker {
                             switch (mesajReceptionat.primesteComanda()) {
                                 case "publica": {
                                     MesajPachet raspuns = new MesajPachet("Ti-am receptionat publicarea!", adresaPersonala);
-                                    listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
+                                    MesajPachet replica = new MesajPachet("Replica mesaj, replicare articol!", adresaPersonala);
 
                                     System.out.println("Am primit mesaj de la PUBLISHER (publicator)!");
+                                    listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
                                     oos.writeObject(raspuns);
+
+                                    System.out.println("Aduc și la restul sistemului articolul introdus.");
+                                    replica.seteazaComanda("replicare");
+                                    replica.seteazaStirea(mesajReceptionat.primesteStirea());
+
+                                    replicaArticolLaVecin(replica);
+
                                     break;
                                 }
 
@@ -98,6 +132,24 @@ public class Broker {
 
                                     System.out.println("Am primit mesaj de la SUBSCRIBER (abonat)!");
                                     oos.writeObject(raspuns);
+                                    break;
+                                }
+
+                                case "replicare": {
+                                    MesajPachet raspuns = new MesajPachet("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
+
+                                    System.out.println("Am primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().toString());
+
+                                    listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
+                                    oos.writeObject(raspuns);
+
+                                    if (mesajReceptionat.primesteAdresa().equals(nodUrmator) != true) {
+                                        System.out.println("Îl replic articolul la următorul vecin.");
+                                        replicaArticolLaVecin(mesajReceptionat);
+                                    } else {
+                                        System.out.println("Nu mai replic și la nodul originar.");
+                                    }
+
                                     break;
                                 }
 
