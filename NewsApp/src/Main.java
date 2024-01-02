@@ -35,9 +35,9 @@ public class Main {
     }
 
     public static void showMenuMessages() {
-        String publisherBolded = StringUtils.applyBoldTo("publisher");
-        String subscriberBolded = StringUtils.applyBoldTo("subscriber");
-        String brokerBolded = StringUtils.applyBoldTo("broker");
+        String publisherBolded = StringUtils.applyBoldTo("publisher", true);
+        String subscriberBolded = StringUtils.applyBoldTo("subscriber", true);
+        String brokerBolded = StringUtils.applyBoldTo("broker", true);
 
         System.out.println("We cannot start the app for you, because you should enter an argument as: " +
                 publisherBolded + ", " + subscriberBolded + " or " + brokerBolded + "\n" +

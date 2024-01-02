@@ -14,7 +14,7 @@ public class PublisherView {
     }
 
     private void showInitialMessage() {
-        String publisher = StringUtils.applyBoldTo("publisher");
+        String publisher = StringUtils.applyBoldTo("publisher", false);
 
         System.out.println("\nAs a " + publisher + " you can:");
         System.out.println("[c] -> create an article");
@@ -35,7 +35,7 @@ public class PublisherView {
     }
 
     private void showBoldMessageWith(String text) {
-        System.out.println("\nWrite the " + StringUtils.applyBoldTo(text) + " of the article");
+        System.out.println("\nWrite the " + StringUtils.applyBoldTo(text, false) + " of the article");
     }
 
     public NewsStory createArticle() {
