@@ -3,48 +3,51 @@ package ui;
 import java.util.Scanner;
 
 public class SubscriberView {
-    public Scanner scannerTastatura;
+    public Scanner keyboardScanner;
 
-    public void afiseazaInterfata () {
-        String optiune;
+    private void showInitialMessage() {
+        System.out.println("As a subscriber you can:\n");
+        System.out.println("[a] -> subscribe to different topics");
+        System.out.println("[f] -> get latest news");
+        System.out.println("[x] -> exit the program\n");
 
-        scannerTastatura = new Scanner(System.in);
+        System.out.print("Please choose one of the above options: ");
+    }
 
-        System.out.println("Optiunile disponibile sunt:\n");
-        System.out.println("[a] -> abonare la un topic");
-        System.out.println("[f] -> aflati ultimele stiri");
-        System.out.println("[x] -> iesire din program\n");
+    public void showUI() {
+        String option;
+        showInitialMessage();
 
-        System.out.print("Optiunea dorita: ");
-        optiune = scannerTastatura.nextLine();
+        keyboardScanner = new Scanner(System.in);
+        option = keyboardScanner.nextLine();
 
-        switch (optiune) {
+        switch (option) {
             case "a": {
-                afisareStiri();
+                showNews();
                 break;
             }
 
             case "f": {
-                abonareLaTopic();
+                subscribeToTopic();
                 break;
             }
 
             case "x": {
-                // Închidere program
+                // close program
             }
         }
     }
 
-    public void afisareStiri () {
+    public void showNews() {
 
     }
 
-    public void abonareLaTopic () {
+    public void subscribeToTopic() {
 
     }
 
-    public void inchideInterfata () {
-        scannerTastatura.close();
+    public void closeInterface() {
+        keyboardScanner.close();
     }
 
     public SubscriberView() {}
