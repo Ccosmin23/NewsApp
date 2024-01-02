@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import model.news.NewsStory;
+import utils.StringUtils;
 
 public class PublisherView {
     public Scanner keyboardScanner;
@@ -13,7 +14,9 @@ public class PublisherView {
     }
 
     private void showInitialMessage() {
-        System.out.println("As a publisher you can:\n");
+        String publisher = StringUtils.applyBoldTo("publisher");
+
+        System.out.println("\nAs a " + publisher + " you can:");
         System.out.println("[c] -> create an article");
         System.out.println("[g] -> create multiple articles");
         System.out.println("[x] -> close the program\n");
@@ -31,14 +34,19 @@ public class PublisherView {
         return option;
     }
 
+    private void showBoldMessageWith(String text) {
+        System.out.println("\nWrite the " + StringUtils.applyBoldTo(text) + " of the article");
+    }
+
     public NewsStory createArticle() {
         String articleTitle;
-        ArrayList<String> lineList;
+        ArrayList<String> lineList = new ArrayList<String>();;
         String characterLine;
         String content = "";
         NewsStory newsArticle = null;
 
-        System.out.println("Write the title of the article");
+        showBoldMessageWith("title");
+
         articleTitle = keyboardScanner.nextLine();
 
         // If no title is given, consider the operation canceled
@@ -46,9 +54,7 @@ public class PublisherView {
             return null;
         }
 
-        lineList = new ArrayList<String>();
-
-        System.out.println("Write the content of the article");
+        showBoldMessageWith("content");
         characterLine = keyboardScanner.nextLine();
 
         // As long as the user writes the content of the news,
@@ -65,6 +71,7 @@ public class PublisherView {
 
             newsArticle = new NewsStory(0, articleTitle, content);
             return newsArticle;
+
         } else {
             // If a news with a title but without content was created, then
             // it is not considered entering the news into the system.

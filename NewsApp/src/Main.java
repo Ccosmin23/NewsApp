@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import model.broker.Broker;
 import model.publisher.Publisher;
 import model.subscriber.Subscriber;
+import utils.StringUtils;
 
 public class Main {
     public static void main(String[] args) {
@@ -32,14 +33,11 @@ public class Main {
             }
         }
     }
-    public static String applyBoldTo(String text) {
-        return "'\033[1m" + text + "\033[0m'";
-    }
 
     public static void showMenuMessages() {
-        String publisherBolded = applyBoldTo("publisher");
-        String subscriberBolded = applyBoldTo("subscriber");
-        String brokerBolded = applyBoldTo("broker");
+        String publisherBolded = StringUtils.applyBoldTo("publisher");
+        String subscriberBolded = StringUtils.applyBoldTo("subscriber");
+        String brokerBolded = StringUtils.applyBoldTo("broker");
 
         System.out.println("We cannot start the app for you, because you should enter an argument as: " +
                 publisherBolded + ", " + subscriberBolded + " or " + brokerBolded + "\n" +
