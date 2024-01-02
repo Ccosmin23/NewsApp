@@ -8,39 +8,39 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import model.broker.MesajPachet;
+import model.broker.BrokerMessage;
 import model.news.NewsField;
 import model.news.NewsStory;
 import ui.SubscriberView;
 
 public class Subscriber {
-    private NewsField listaArticole;
+    private NewsField articleList;
 
-    public void primesteArticole (InetAddress destinatie) throws ClassNotFoundException {
+    public void receiveArticles(InetAddress destination) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            MesajPachet msg = new MesajPachet("Hello broker", destinatie);
-            Socket socketComuicare = new Socket(destinatie, 9700);
-            MesajPachet raspuns;
+            BrokerMessage msg = new BrokerMessage("Hello broker", destination);
+            Socket communicationSocket = new Socket(destination, 9700);
+            BrokerMessage response;
 
-            // Comanda "articole" îi va spune broker-ului să trimită
-            // o listă de știri în răspunsul pe care îl va furniza
-            msg.seteazaComanda("articole");
+            // The "articles" command will tell the broker to send
+            // a list of news in the response it will provide
+            msg.setCommand("articles");
 
-            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
-            ois = new ObjectInputStream(socketComuicare.getInputStream());
-            
+            oos = new ObjectOutputStream(communicationSocket.getOutputStream());
+            ois = new ObjectInputStream(communicationSocket.getInputStream());
+
             oos.writeObject(msg);
             oos.flush();
 
-            // Extrage răspunsul broker-ului care are lista de știri
-            raspuns = (MesajPachet) ois.readObject();
-            this.listaArticole = raspuns.primesteListaStiri();
+            // Extract the broker's response that contains the list of articles
+            response = (BrokerMessage) ois.readObject();
+            this.articleList = response.receiveNewsList();
 
-            System.out.println("Raspunsul broker-ului: " + raspuns.primesteMesaj());
+            System.out.println("Broker's response: " + response.receiveMessage());
 
-            socketComuicare.close();
+            communicationSocket.close();
             oos.close();
             ois.close();
         } catch (UnknownHostException e) {
@@ -50,29 +50,29 @@ public class Subscriber {
         }
     }
 
-    public void listeazaStiri () {
-        if ((this.listaArticole != null) && (this.listaArticole.getNewsStoryList() != null) && (this.listaArticole.getNewsStoryList().size() != 0)) {
-            ArrayList<NewsStory> stirileExtrase = this.listaArticole.getNewsStoryList();
+    public void listArticles() {
+        if ((this.articleList != null) && (this.articleList.getNewsStoryList() != null) && (this.articleList.getNewsStoryList().size() != 0)) {
+            ArrayList<NewsStory> extractedArticles = this.articleList.getNewsStoryList();
 
-            System.out.println("Articolele publicate sunt:");
-            for (NewsStory stire : stirileExtrase) {
-                System.out.println(stire.getTitlu() + "\n");
-                System.out.println(stire.getContinut() + "\n-------------------------------");
+            System.out.println("Published articles are:");
+            for (NewsStory article : extractedArticles) {
+                System.out.println(article.getTitle() + "\n");
+                System.out.println(article.getContent() + "\n-------------------------------");
             }
         } else {
-            System.out.println("Nu exista articole publicate in sistem.");
+            System.out.println("There are no published articles in the system.");
         }
     }
 
-    public void start () throws UnknownHostException {
-        SubscriberView uiAbonat = new SubscriberView();
+    public void start() throws UnknownHostException {
+        SubscriberView subscriberUI = new SubscriberView();
 
-        // uiAbonat.afiseazaInterfata();
-        // uiAbonat.inchideInterfata();
+        // subscriberUI.displayInterface();
+        // subscriberUI.closeInterface();
 
         try {
-            primesteArticole(InetAddress.getByName("192.168.30.10"));
-            listeazaStiri();
+            receiveArticles(InetAddress.getByName("192.168.30.10"));
+            listArticles();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

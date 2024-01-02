@@ -40,9 +40,7 @@ public class NewsField implements Serializable {
         this.newsStoryList = newsStoryList;
     }
 
-    public void adaugaStire (NewsStory stire) {
-        this.newsStoryList.add(stire);
+    public void addNewsStory(NewsStory newsStory) {
+        this.newsStoryList.add(newsStory);
     }
 }
-
-

@@ -19,33 +19,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import model.news.NewsField;
 
 public class Broker {
-    InetAddress adresaPersonala;
-    InetAddress nodUrmator;
+    InetAddress personalAddress;
+    InetAddress nextNode;
     ServerSocket receiverSocket;
-    ArrayList<InetAddress> adreseNoduri;
-    AtomicBoolean ruleaza;
-    NewsField listaStiri;
+    ArrayList<InetAddress> nodeAddresses;
+    AtomicBoolean isRunning;
+    NewsField newsList;
 
-    public void send (InetAddress destinatie) throws ClassNotFoundException {
+    public void send(InetAddress destination) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            MesajPachet msg = new MesajPachet("Hello", destinatie);
-            MesajPachet raspuns;
-            Socket socketComuicare = new Socket(nodUrmator, 9700);
+            BrokerMessage msg = new BrokerMessage("Hello", destination);
+            BrokerMessage response;
+            Socket communicationSocket = new Socket(nextNode, 9700);
 
-            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
-            ois = new ObjectInputStream(socketComuicare.getInputStream());
+            oos = new ObjectOutputStream(communicationSocket.getOutputStream());
+            ois = new ObjectInputStream(communicationSocket.getInputStream());
 
             oos.writeObject(msg);
             oos.flush();
 
-            raspuns = (MesajPachet) ois.readObject();
-            System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
+            response = (BrokerMessage) ois.readObject();
+            System.out.println("Message from the neighbor: " + response.receiveMessage());
 
             oos.close();
             ois.close();
-            socketComuicare.close();
+            communicationSocket.close();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -53,25 +53,25 @@ public class Broker {
         }
     }
 
-    public void replicaArticolLaVecin (MesajPachet pachetReplica) throws ClassNotFoundException {
+    public void replicateArticleToNeighbor(BrokerMessage replicaPackage) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            MesajPachet raspuns;
-            Socket socketComuicare = new Socket(nodUrmator, 9700);
+            BrokerMessage response;
+            Socket communicationSocket = new Socket(nextNode, 9700);
 
-            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
-            ois = new ObjectInputStream(socketComuicare.getInputStream());
+            oos = new ObjectOutputStream(communicationSocket.getOutputStream());
+            ois = new ObjectInputStream(communicationSocket.getInputStream());
 
-            oos.writeObject(pachetReplica);
+            oos.writeObject(replicaPackage);
             oos.flush();
 
-            raspuns = (MesajPachet) ois.readObject();
-            System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
+            response = (BrokerMessage) ois.readObject();
+            System.out.println("Message from the neighbor: " + response.receiveMessage());
 
             oos.close();
             ois.close();
-            socketComuicare.close();
+            communicationSocket.close();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -79,23 +79,23 @@ public class Broker {
         }
     }
 
-    public Thread receive () {
+    public Thread receive() {
         return new Thread(new Runnable() {
             @Override
-            public void run () {
+            public void run() {
                 Socket clientSocket;
                 DataInputStream clientIStream;
                 DataOutputStream clientOStream;
                 ObjectOutputStream oos;
                 ObjectInputStream ois;
-                MesajPachet mesajReceptionat;
+                BrokerMessage receivedMessage;
 
                 try {
                     receiverSocket = new ServerSocket(9700);
-                    while (ruleaza.get() == true) {
+                    while (isRunning.get() == true) {
                         try {
                             clientSocket = receiverSocket.accept();
-                            System.out.println("Mesajul de la " + clientSocket.getInetAddress().toString() + " este receptionat!");
+                            System.out.println("Message from " + clientSocket.getInetAddress().toString() + " is received!");
 
                             clientIStream = new DataInputStream(clientSocket.getInputStream());
                             clientOStream = new DataOutputStream(clientSocket.getOutputStream());
@@ -103,68 +103,68 @@ public class Broker {
                             ois = new ObjectInputStream(clientIStream);
                             oos = new ObjectOutputStream(clientOStream);
 
-                            mesajReceptionat = (MesajPachet) ois.readObject();
+                            receivedMessage = (BrokerMessage) ois.readObject();
 
-                            System.out.println(mesajReceptionat.primesteComanda());
-                            switch (mesajReceptionat.primesteComanda()) {
-                                case "publica": {
-                                    MesajPachet raspuns = new MesajPachet("Ti-am receptionat publicarea!", adresaPersonala);
-                                    MesajPachet replica = new MesajPachet("Replica mesaj, replicare articol!", adresaPersonala);
+                            System.out.println(receivedMessage.receiveCommand());
+                            switch (receivedMessage.receiveCommand()) {
+                                case "publish": {
+                                    BrokerMessage response = new BrokerMessage("Received your publication!", personalAddress);
+                                    BrokerMessage replica = new BrokerMessage("Reply message, article replication!", personalAddress);
 
-                                    System.out.println("Am primit mesaj de la PUBLISHER (publicator)!");
-                                    listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
-                                    oos.writeObject(raspuns);
+                                    System.out.println("Received message from the PUBLISHER!");
+                                    newsList.addNewsStory(receivedMessage.receiveStory());
+                                    oos.writeObject(response);
 
-                                    System.out.println("Aduc și la restul sistemului articolul introdus.");
-                                    replica.seteazaComanda("replicare");
-                                    replica.seteazaStirea(mesajReceptionat.primesteStirea());
+                                    System.out.println("Bringing the introduced article to the rest of the system.");
+                                    replica.setCommand("replicate");
+                                    replica.setStory(receivedMessage.receiveStory());
 
-                                    replicaArticolLaVecin(replica);
+                                    replicateArticleToNeighbor(replica);
 
                                     break;
                                 }
 
-                                case "articole": {
-                                    MesajPachet raspuns = new MesajPachet("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
+                                case "articles": {
+                                    BrokerMessage response = new BrokerMessage("Received your data request (articles in this case)!", personalAddress);
 
-                                    raspuns.seteazaListaStiri(listaStiri);
+                                    response.setNewsList(newsList);
 
-                                    System.out.println("Am primit mesaj de la SUBSCRIBER (abonat)!");
-                                    oos.writeObject(raspuns);
+                                    System.out.println("Received message from the SUBSCRIBER!");
+                                    oos.writeObject(response);
                                     break;
                                 }
 
-                                case "replicare": {
-                                    MesajPachet raspuns = new MesajPachet("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
+                                case "replicate": {
+                                    BrokerMessage response = new BrokerMessage("Replicated the article \"" + receivedMessage.receiveStory().getTitle() + "\"", personalAddress);
 
-                                    System.out.println("Am primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().toString());
+                                    System.out.println("Received replication request from the neighbor broker " + clientSocket.getInetAddress().toString());
 
-                                    listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
-                                    oos.writeObject(raspuns);
+                                    newsList.addNewsStory(receivedMessage.receiveStory());
+                                    oos.writeObject(response);
 
-                                    if (mesajReceptionat.primesteAdresa().equals(nodUrmator) != true) {
-                                        System.out.println("Îl replic articolul la următorul vecin.");
-                                        replicaArticolLaVecin(mesajReceptionat);
+                                    if (!receivedMessage.receiveAddress().equals(nextNode)) {
+                                        System.out.println("Replicating the article to the next neighbor.");
+                                        replicateArticleToNeighbor(receivedMessage);
                                     } else {
-                                        System.out.println("Nu mai replic și la nodul originar.");
+                                        System.out.println("No longer replicating to the original node.");
                                     }
 
                                     break;
                                 }
 
                                 default: {
-                                    if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
-                                        MesajPachet raspuns = new MesajPachet("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
+                                    if (receivedMessage.receiveAddress().equals(personalAddress)) {
+                                        BrokerMessage response = new BrokerMessage("It's me. Thanks for the message!", personalAddress);
 
-                                        System.out.println("Sunt eu!");
-                                        oos.writeObject(raspuns);
+                                        System.out.println("It's me!");
+                                        oos.writeObject(response);
                                     } else {
-                                        MesajPachet raspuns = new MesajPachet("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
+                                        BrokerMessage response = new BrokerMessage("It's not me. But I forwarded it further", personalAddress);
 
-                                        System.out.println("Nu sunt eu!");
-                                        oos.writeObject(raspuns);
+                                        System.out.println("It's not me!");
+                                        oos.writeObject(response);
                                         Thread.sleep(500);
-                                        send(mesajReceptionat.primesteAdresa());
+                                        send(receivedMessage.receiveAddress());
                                     }
                                 }
                             }
@@ -181,7 +181,7 @@ public class Broker {
                         }
                     }
 
-                    System.out.println("AM ÎNCHEIAT ASCULTAREA!");
+                    System.out.println("FINISHED LISTENING!");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -195,44 +195,44 @@ public class Broker {
                 " - meanwhile if you want to stop this process, please press 'x' button\n");
     }
 
-    public void start () throws SocketException, UnknownHostException {
+    public void start() throws SocketException, UnknownHostException {
         startMessage();
 
-        Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
-        InetAddress adresaGazda = null;
-        
-        // Verifică dacă pe mașina care execută programul are o interfață cu adresa
-        // ip din lista de adrese de mașini participante în rețeaua cu topologie de inel
-        while (interfeteRetea.hasMoreElements()) {
-            NetworkInterface networkInterface = interfeteRetea.nextElement();
+        Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        InetAddress hostAddress = null;
+
+        // Check if the machine running the program has an interface with an IP address
+        // from the list of addresses of machines participating in the ring topology network
+        while (networkInterfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = networkInterfaces.nextElement();
             Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
 
             while (inetAddresses.hasMoreElements()) {
                 InetAddress inetAddress = inetAddresses.nextElement();
-                if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
-                    adresaGazda = inetAddress;
+                if (nodeAddresses.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
+                    hostAddress = inetAddress;
                     break;
                 }
             }
 
-            if (adresaGazda != null) {
+            if (hostAddress != null) {
                 break;
             }
         }
-        
-        // Determină nodul următor cu care mașina broker va comunica folosind
-        // lista cu adresele ip definite
-        if (adreseNoduri.contains(adresaGazda)) {
-            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
+
+        // Determine the next node with which the broker machine will communicate using
+        // the list of defined IP addresses
+        if (nodeAddresses.contains(hostAddress)) {
+            this.nextNode = nodeAddresses.get((nodeAddresses.indexOf(hostAddress) + 1) % nodeAddresses.size());
         }
 
-        adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
+        personalAddress = InetAddress.getByAddress(hostAddress.getAddress());
 
-        this.ruleaza = new AtomicBoolean(true);
+        this.isRunning = new AtomicBoolean(true);
         receive().start();
-        while (this.ruleaza.get() == true) {
-            Console consola = System.console();
-            switch (consola.readLine("-> ")) {
+        while (this.isRunning.get() == true) {
+            Console console = System.console();
+            switch (console.readLine("-> ")) {
                 case "s": {
                     try {
                         send(InetAddress.getByName("192.168.30.10"));
@@ -243,13 +243,13 @@ public class Broker {
                 }
 
                 case "x": {
-                    this.ruleaza.set(false);
+                    this.isRunning.set(false);
                     try {
                         receiverSocket.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    
+
                     break;
                 }
 
@@ -259,11 +259,11 @@ public class Broker {
             }
         }
 
-        System.out.println("AM TERMINAT!");
+        System.out.println("FINISHED!");
     }
 
-    public Broker (ArrayList<InetAddress> listaAdreseMasini) {
-        this.adreseNoduri = listaAdreseMasini;
-        this.listaStiri = new NewsField(1, "Stiri");
+    public Broker(ArrayList<InetAddress> machineAddresses) {
+        this.nodeAddresses = machineAddresses;
+        this.newsList = new NewsField(1, "News");
     }
 }

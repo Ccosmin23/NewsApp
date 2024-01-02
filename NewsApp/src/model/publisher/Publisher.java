@@ -7,36 +7,36 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import model.broker.MesajPachet;
+import model.broker.BrokerMessage;
 import model.news.NewsStory;
 import ui.PublisherView;
 
 public class Publisher {
-    private PublisherView uiPublisher;
+    private PublisherView publisherUI;
 
-    public void trimiteStirea (InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
+    public void sendNews(InetAddress destination, NewsStory newsStory) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            MesajPachet msg = new MesajPachet("Hello broker de inel", destinatie);
-            Socket socketComuicare = new Socket(destinatie, 9700);
-            MesajPachet raspuns;
+            BrokerMessage msg = new BrokerMessage("Hello broker ring", destination);
+            Socket communicationSocket = new Socket(destination, 9700);
+            BrokerMessage response;
 
-            msg.seteazaComanda("publica");
-            msg.seteazaStirea(stirea);
+            msg.setCommand("publish");
+            msg.setStory(newsStory);
 
-            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
-            ois = new ObjectInputStream(socketComuicare.getInputStream());
-            
+            oos = new ObjectOutputStream(communicationSocket.getOutputStream());
+            ois = new ObjectInputStream(communicationSocket.getInputStream());
+
             oos.writeObject(msg);
             oos.flush();
 
-            System.out.println("Publicare trimisa");
+            System.out.println("Publication sent");
 
-            raspuns = (MesajPachet) ois.readObject();
-            System.out.println("Raspunsul server-ului: " + raspuns.primesteMesaj());
+            response = (BrokerMessage) ois.readObject();
+            System.out.println("Server response: " + response.receiveMessage());
 
-            socketComuicare.close();
+            communicationSocket.close();
             oos.close();
             ois.close();
         } catch (UnknownHostException e) {
@@ -46,30 +46,30 @@ public class Publisher {
         }
     }
 
-    public void start () throws UnknownHostException, ClassNotFoundException {
-        PublisherView uiPublisher = new PublisherView();
-        boolean terminat = false;
+    public void start() throws UnknownHostException, ClassNotFoundException {
+        publisherUI = new PublisherView();
+        boolean finished = false;
 
-        while (terminat != true) {
-            switch (uiPublisher.afiseazaInterfata()) {
+        while (!finished) {
+            switch (publisherUI.displayInterface()) {
                 case "c": {
-                    NewsStory stireaCreata = uiPublisher.creeazaArticol();
-                    if (stireaCreata != null) {
-                        trimiteStirea(InetAddress.getByName("192.168.30.10"), stireaCreata);
+                    NewsStory createdNewsStory = publisherUI.createArticle();
+                    if (createdNewsStory != null) {
+                        sendNews(InetAddress.getByName("192.168.30.10"), createdNewsStory);
                     }
 
                     break;
                 }
 
                 case "g": {
-                    uiPublisher.genereazaArticole();
+                    publisherUI.createMultipleArticles();
                     break;
                 }
 
                 case "x": {
-                    // Închidere program
-                    terminat = true;
-                    uiPublisher.inchideInterfata();
+                    // Close program
+                    finished = true;
+                    publisherUI.closeInterface();
                 }
             }
         }

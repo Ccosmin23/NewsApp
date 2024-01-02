@@ -6,13 +6,13 @@ public class NewsStory implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Integer id;
-    private String titlu;
-    private String continut;
+    private String title;
+    private String content;
 
-    public NewsStory(Integer id, String titlu, String continut) {
+    public NewsStory(Integer id, String title, String content) {
         this.id = id;
-        this.titlu = titlu;
-        this.continut = continut;
+        this.title = title;
+        this.content = content;
     }
 
     public Integer getId() {
@@ -23,19 +23,19 @@ public class NewsStory implements Serializable {
         this.id = id;
     }
 
-    public String getTitlu() {
-        return titlu;
+    public String getTitle() {
+        return title;
     }
 
-    public void setTitlu(String titlu) {
-        this.titlu = titlu;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getContinut () {
-        return this.continut;
+    public String getContent() {
+        return this.content;
     }
 
-    public void setContinut (String continut) {
-        this.continut = continut;
+    public void setContent(String content) {
+        this.content = content;
     }
 }
