@@ -1,4 +1,7 @@
-package model;
+package model.broker;
+
+import model.news.NewsField;
+import model.news.NewsStory;
 
 import java.io.Serializable;
 import java.net.InetAddress;

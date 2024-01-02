@@ -3,7 +3,7 @@ package ui;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import model.NewsStory;
+import model.news.NewsStory;
 
 public class InterfataPublisher {
     public Scanner scannerTastatura;

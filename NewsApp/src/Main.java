@@ -3,9 +3,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import architecture.Broker;
-import architecture.Publisher;
-import architecture.Subscriber;
+import model.broker.Broker;
+import model.publisher.Publisher;
+import model.subscriber.Subscriber;
 
 public class Main {
     public static void main(String[] args) {
@@ -72,6 +72,7 @@ public class Main {
 
             Broker masina = new Broker(adreseRetea);
             masina.start();
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (SocketException e) {

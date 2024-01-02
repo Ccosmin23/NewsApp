@@ -1,4 +1,4 @@
-package architecture;
+package model.broker;
 
 import java.io.Console;
 import java.io.DataInputStream;
@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import model.MesajPachet;
-import model.NewsField;
+import model.news.NewsField;
 
 public class Broker {
     InetAddress adresaPersonala;
