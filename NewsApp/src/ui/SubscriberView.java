@@ -2,7 +2,7 @@ package ui;
 
 import java.util.Scanner;
 
-public class InterfataAbonat {
+public class SubscriberView {
     public Scanner scannerTastatura;
 
     public void afiseazaInterfata () {
@@ -47,5 +47,5 @@ public class InterfataAbonat {
         scannerTastatura.close();
     }
 
-    public InterfataAbonat () {}
+    public SubscriberView() {}
 }

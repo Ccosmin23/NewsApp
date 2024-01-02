@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 import model.news.NewsStory;
 
-public class InterfataPublisher {
+public class PublisherView {
     public Scanner scannerTastatura;
 
     public String afiseazaInterfata () {
@@ -74,5 +74,7 @@ public class InterfataPublisher {
         scannerTastatura.close();
     }
 
-    public InterfataPublisher () {}
+    public PublisherView() {
+
+    }
 }

@@ -1,4 +1,5 @@
-﻿import java.net.InetAddress;
+
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -31,13 +32,20 @@ public class Main {
             }
         }
     }
+    public static String applyBoldTo(String text) {
+        return "'\033[1m" + text + "\033[0m'";
+    }
 
     public static void showMenuMessages() {
-        System.out.println("We cannot start the app for you, because you should enter an argument as:" +
-                "\t'publisher', 'subscribe' or 'broker'\n\n" +
-                "\tpublisher will start the execution as a publisher" +
-                "\tsubscriber will start the execution as a subscriber" +
-                "\tbroker -> will start the execution as a broker");
+        String publisherBolded = applyBoldTo("publisher");
+        String subscriberBolded = applyBoldTo("subscriber");
+        String brokerBolded = applyBoldTo("broker");
+
+        System.out.println("We cannot start the app for you, because you should enter an argument as: " +
+                publisherBolded + ", " + subscriberBolded + " or " + brokerBolded + "\n" +
+                publisherBolded + " -> will start the execution as a publisher\n" +
+                subscriberBolded + " -> will start the execution as a subscriber\n" +
+                brokerBolded + "-> will start the execution as a broker\n\n");
     }
 
     public static void startAsAPublisher() {

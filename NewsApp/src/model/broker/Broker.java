@@ -189,7 +189,15 @@ public class Broker {
         });
     }
 
+    private void startMessage() {
+        System.out.println("Broker has started.\n" +
+                " - please wait until it receives a message...\n" +
+                " - meanwhile if you want to stop this process, please press 'x' button\n");
+    }
+
     public void start () throws SocketException, UnknownHostException {
+        startMessage();
+
         Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
         InetAddress adresaGazda = null;
         
