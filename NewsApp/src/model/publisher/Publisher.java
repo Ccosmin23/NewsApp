@@ -9,10 +9,10 @@ import java.net.UnknownHostException;
 
 import model.broker.BrokerMessage;
 import model.news.NewsStory;
-import ui.InterfataPublisher;
+import ui.PublisherView;
 
 public class Publisher {
-    private InterfataPublisher uiPublisher;
+    private PublisherView uiPublisher;
 
     public void trimiteStirea (InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
         try {
@@ -47,7 +47,7 @@ public class Publisher {
     }
 
     public void start () throws UnknownHostException, ClassNotFoundException {
-        InterfataPublisher uiPublisher = new InterfataPublisher();
+        PublisherView uiPublisher = new PublisherView();
         boolean terminat = false;
 
         while (terminat != true) {

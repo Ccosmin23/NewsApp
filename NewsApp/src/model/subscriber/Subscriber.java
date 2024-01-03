@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import model.broker.BrokerMessage;
 import model.news.NewsField;
 import model.news.NewsStory;
-import ui.InterfataAbonat;
+import ui.SubscriberView;
 
 public class Subscriber {
     private NewsField listaArticole;
@@ -65,7 +65,7 @@ public class Subscriber {
     }
 
     public void start () throws UnknownHostException {
-        InterfataAbonat uiAbonat = new InterfataAbonat();
+        SubscriberView uiAbonat = new SubscriberView();
 
         // uiAbonat.afiseazaInterfata();
         // uiAbonat.inchideInterfata();
