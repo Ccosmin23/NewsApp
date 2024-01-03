@@ -8,10 +8,10 @@ public class MainView {
         String subscriberBolded = StringUtils.applyBoldTo("subscriber", true);
         String brokerBolded = StringUtils.applyBoldTo("broker", true);
 
-        System.out.println("We cannot start the app for you, because you should enter an argument as:"
+        System.out.println("Aplicatia nu poate porni. Te rugam sa adaugi unul dintre urmatoarele argumente:"
                 + publisherBolded + ", " + subscriberBolded + " or " + brokerBolded + "\n" +
-                publisherBolded + " -> will start the execution as a publisher\n" +
-                subscriberBolded + " -> will start the execution as a subscriber\n" +
-                brokerBolded + " -> will start the execution as a broker\n");
+                publisherBolded + " -> incepe executia ca si publisher\n" +
+                subscriberBolded + " -> incepe executia ca si subscriber\n" +
+                brokerBolded + " -> incepe executia ca si broker\n");
     }
 }
