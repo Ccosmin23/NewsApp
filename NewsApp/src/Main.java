@@ -21,10 +21,13 @@ public class Main {
         switch (args[0]) {
             case "publisher":
                 startAsAPublisher();
+                break;
             case "subscriber":
                 startAsASubscriber();
+                break;
             case "broker":
                 startAsABroker();
+                break;
             default: {
                 showMenuMessages();
                 break;
