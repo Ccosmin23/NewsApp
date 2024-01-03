@@ -1,4 +1,4 @@
-package architecture;
+package model.broker;
 
 import java.io.Console;
 import java.io.DataInputStream;
@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import model.MesajPachet;
-import model.NewsField;
+import model.news.NewsField;
 
 public class Broker {
     InetAddress adresaPersonala;
@@ -31,8 +30,8 @@ public class Broker {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            MesajPachet msg = new MesajPachet("Hello", destinatie);
-            MesajPachet raspuns;
+            BrokerMessage msg = new BrokerMessage("Hello", destinatie);
+            BrokerMessage raspuns;
             Socket socketComuicare = new Socket(nodUrmator, 9700);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
@@ -41,7 +40,7 @@ public class Broker {
             oos.writeObject(msg);
             oos.flush();
 
-            raspuns = (MesajPachet) ois.readObject();
+            raspuns = (BrokerMessage) ois.readObject();
             System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
 
             oos.close();
@@ -54,11 +53,11 @@ public class Broker {
         }
     }
 
-    public void replicaArticolLaVecin (MesajPachet pachetReplica) throws ClassNotFoundException {
+    public void replicaArticolLaVecin (BrokerMessage pachetReplica) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            MesajPachet raspuns;
+            BrokerMessage raspuns;
             Socket socketComuicare = new Socket(nodUrmator, 9700);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
@@ -67,7 +66,7 @@ public class Broker {
             oos.writeObject(pachetReplica);
             oos.flush();
 
-            raspuns = (MesajPachet) ois.readObject();
+            raspuns = (BrokerMessage) ois.readObject();
             System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
 
             oos.close();
@@ -89,7 +88,7 @@ public class Broker {
                 DataOutputStream clientOStream;
                 ObjectOutputStream oos;
                 ObjectInputStream ois;
-                MesajPachet mesajReceptionat;
+                BrokerMessage mesajReceptionat;
 
                 try {
                     receiverSocket = new ServerSocket(9700);
@@ -104,13 +103,13 @@ public class Broker {
                             ois = new ObjectInputStream(clientIStream);
                             oos = new ObjectOutputStream(clientOStream);
 
-                            mesajReceptionat = (MesajPachet) ois.readObject();
+                            mesajReceptionat = (BrokerMessage) ois.readObject();
 
                             System.out.println(mesajReceptionat.primesteComanda());
                             switch (mesajReceptionat.primesteComanda()) {
                                 case "publica": {
-                                    MesajPachet raspuns = new MesajPachet("Ti-am receptionat publicarea!", adresaPersonala);
-                                    MesajPachet replica = new MesajPachet("Replica mesaj, replicare articol!", adresaPersonala);
+                                    BrokerMessage raspuns = new BrokerMessage("Ti-am receptionat publicarea!", adresaPersonala);
+                                    BrokerMessage replica = new BrokerMessage("Replica mesaj, replicare articol!", adresaPersonala);
 
                                     System.out.println("Am primit mesaj de la PUBLISHER (publicator)!");
                                     listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
@@ -126,7 +125,7 @@ public class Broker {
                                 }
 
                                 case "articole": {
-                                    MesajPachet raspuns = new MesajPachet("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
+                                    BrokerMessage raspuns = new BrokerMessage("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
 
                                     raspuns.seteazaListaStiri(listaStiri);
 
@@ -136,7 +135,7 @@ public class Broker {
                                 }
 
                                 case "replicare": {
-                                    MesajPachet raspuns = new MesajPachet("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
+                                    BrokerMessage raspuns = new BrokerMessage("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
 
                                     System.out.println("Am primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().toString());
 
@@ -155,12 +154,12 @@ public class Broker {
 
                                 default: {
                                     if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
-                                        MesajPachet raspuns = new MesajPachet("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
+                                        BrokerMessage raspuns = new BrokerMessage("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
 
                                         System.out.println("Sunt eu!");
                                         oos.writeObject(raspuns);
                                     } else {
-                                        MesajPachet raspuns = new MesajPachet("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
+                                        BrokerMessage raspuns = new BrokerMessage("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
 
                                         System.out.println("Nu sunt eu!");
                                         oos.writeObject(raspuns);

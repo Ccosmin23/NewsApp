@@ -1,9 +1,12 @@
-package model;
+package model.broker;
+
+import model.news.NewsField;
+import model.news.NewsStory;
 
 import java.io.Serializable;
 import java.net.InetAddress;
 
-public class MesajPachet implements Serializable {
+public class BrokerMessage implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String mesaj;
@@ -11,6 +14,12 @@ public class MesajPachet implements Serializable {
     private InetAddress destinatie;
     private NewsStory stire;
     private NewsField listaStiri;
+
+    public BrokerMessage(String msg, InetAddress dest) {
+        this.destinatie = dest;
+        this.mesaj = msg;
+        this.comanda = "";
+    }
 
     public NewsStory primesteStirea () {
         return this.stire;
@@ -42,11 +51,5 @@ public class MesajPachet implements Serializable {
 
     public String primesteComanda () {
         return this.comanda;
-    }
-
-    public MesajPachet (String msg, InetAddress dest) {
-        this.destinatie = dest;
-        this.mesaj = msg;
-        this.comanda = "";
     }
 }

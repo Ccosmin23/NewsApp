@@ -5,7 +5,7 @@ FROM openjdk:17
 WORKDIR /usr/src/app
 
 # Copy the application JAR file into the container at the working directory
-COPY NewsApp.jar .
+COPY out/artifacts/NewsApp_jar/NewsApp.jar .
 
 # Specify the command to run on container startup
 CMD ["java", "-jar", "NewsApp.jar"]
