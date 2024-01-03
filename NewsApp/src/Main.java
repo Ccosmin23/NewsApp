@@ -6,12 +6,13 @@ import java.util.ArrayList;
 import model.broker.Broker;
 import model.publisher.Publisher;
 import model.subscriber.Subscriber;
+import ui.MainView;
 import utils.StringUtils;
 
 public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
-            showMenuMessages();
+            MainView.showMenuMessages();
             return;
         }
 
@@ -30,22 +31,10 @@ public class Main {
                 startAsABroker();
                 break;
             default: {
-                showMenuMessages();
+                MainView.showMenuMessages();
                 break;
             }
         }
-    }
-
-    public static void showMenuMessages() {
-        String publisherBolded = StringUtils.applyBoldTo("publisher", true);
-        String subscriberBolded = StringUtils.applyBoldTo("subscriber", true);
-        String brokerBolded = StringUtils.applyBoldTo("broker", true);
-
-        System.out.println("We cannot start the app for you, because you should enter an argument as:"
-                + publisherBolded + ", " + subscriberBolded + " or " + brokerBolded + "\n" +
-                publisherBolded + " -> will start the execution as a publisher\n" +
-                subscriberBolded + " -> will start the execution as a subscriber\n" +
-                brokerBolded + " -> will start the execution as a broker\n");
     }
 
     public static void startAsAPublisher() {
