@@ -21,6 +21,7 @@ import model.news.NewsField;
 public class Broker {
     InetAddress adresaPersonala;
     InetAddress nodUrmator;
+    
     ServerSocket receiverSocket;
     ArrayList<InetAddress> adreseNoduri;
     AtomicBoolean ruleaza;
