@@ -20,6 +20,26 @@ public final class PublisherService {
         publisherView = new PublisherView();
     }
 
+    public void start() throws UnknownHostException, ClassNotFoundException {
+        while (programHasBeenClosed != true) {
+            switch (publisherView.afiseazaInterfata()) {
+                case "c": {
+                    createArticle();
+                    break;
+                }
+                case "g": {
+                    publisherView.genereazaArticole();
+                    break;
+                }
+                case "x":
+                    closeProgram();
+                    break;
+                default:
+                    System.out.println("Optiune invailda");
+            }
+        }
+    }
+
     public void trimiteStirea (InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
         try {
             ObjectOutputStream objectOutputStream;
@@ -50,26 +70,6 @@ public final class PublisherService {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    public void start() throws UnknownHostException, ClassNotFoundException {
-        while (programHasBeenClosed != true) {
-            switch (publisherView.afiseazaInterfata()) {
-                case "c": {
-                    createArticle();
-                    break;
-                }
-                case "g": {
-                    publisherView.genereazaArticole();
-                    break;
-                }
-                case "x":
-                    closeProgram();
-                    break;
-                default:
-                    System.out.println("Optiune invailda");
-            }
         }
     }
 

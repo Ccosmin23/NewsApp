@@ -35,23 +35,6 @@ public final class BrokerService {
         this.listaStiri = new NewsField(1, "Stiri");
     }
 
-    private ArrayList<InetAddress> getInetAddresses() {
-        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
-
-        try {
-            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        return inetAddressList;
-    }
-
     public void start () throws SocketException, UnknownHostException {
         Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
         InetAddress adresaGazda = null;
@@ -278,5 +261,22 @@ public final class BrokerService {
                 }
             }
         });
+    }
+
+    private ArrayList<InetAddress> getInetAddresses() {
+        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
+
+        try {
+            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
+
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        return inetAddressList;
     }
 }
