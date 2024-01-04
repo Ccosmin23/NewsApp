@@ -63,7 +63,7 @@ public final class BrokerService {
         if (adresaGazda != null) {
             adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
         } else {
-            throw new IllegalStateException("Could not find a suitable address for adresaGazda");
+            throw new IllegalStateException("nu se poate gasi o adresa gazda");
         }
 
         this.ruleaza = new AtomicBoolean(true);
