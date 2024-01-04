@@ -15,6 +15,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import model.broker.BrokerMessage;
 import model.news.NewsField;
@@ -27,6 +29,7 @@ public final class BrokerService {
     ArrayList<InetAddress> adreseNoduri;
     AtomicBoolean programIsRunning;
     NewsField listaStiri;
+    private Timer heartbeatTimer;
 
     public static BrokerService shared = new BrokerService();
 
@@ -38,6 +41,7 @@ public final class BrokerService {
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
         findSuitableHostAddress();
+        startHeartbeat();
         receive().start();
         userInputHandler();
         System.out.println("\nS-a incheiat executia pentru acest broker!");
@@ -265,7 +269,7 @@ public final class BrokerService {
     }
 
     private void userInputHandler() throws UnknownHostException {
-        while (this.programIsRunning.get() == true) {
+        while (this.programIsRunning.get()) {
             Console consola = System.console();
             switch (consola.readLine("-> ")) {
                 case "s": {
@@ -278,6 +282,7 @@ public final class BrokerService {
                 }
 
                 case "x": {
+                    stopHeartbeat();
                     this.programIsRunning.set(false);
 
                     try {
@@ -296,6 +301,38 @@ public final class BrokerService {
         }
     }
 
+    // ========================================== toleranta la defectare ==========================================
+    private void startHeartbeat() {
+        heartbeatTimer = new Timer();
+
+        heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                sendHeartbeat();
+            }
+        }, 0, 5000); // la fiecare 5 secunde se trimite un semnal heartbeat ca sa verificam nodurile
+    }
+
+    private void sendHeartbeat() {
+        try {
+            InetAddress nextNode = nodUrmator != null ? nodUrmator : adreseNoduri.get(0);
+            send(nextNode);
+            System.out.println("\nnodul = " + nextNode + " inca merge");
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("\na picat ceva\n");
+        }
+    }
+
+    private void stopHeartbeat() {
+        if (heartbeatTimer != null) {
+            heartbeatTimer.cancel();
+            heartbeatTimer.purge();
+        }
+    }
+
+    // ========================================== IP addresses ==========================================
     private ArrayList<InetAddress> getInetAddresses() {
         ArrayList<InetAddress> inetAddressList = new ArrayList<>();
 
