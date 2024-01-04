@@ -44,6 +44,22 @@ public final class BrokerService {
     }
 
     private InetAddress findSuitableHostAddress() throws SocketException, UnknownHostException {
+        InetAddress adresaGazda = searchHostAddressIntoLocalMachine();
+
+        if (adreseNoduri.contains(adresaGazda)) {
+            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
+        }
+
+        if (adresaGazda != null) {
+            adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
+        } else {
+            throw new IllegalStateException("nu se poate gasi o adresa gazda");
+        }
+
+        return adresaGazda;
+    }
+
+    private InetAddress searchHostAddressIntoLocalMachine() throws SocketException {
         InetAddress adresaGazda = null;
         Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
 
@@ -62,16 +78,6 @@ public final class BrokerService {
             if (adresaGazda != null) {
                 break;
             }
-        }
-
-        if (adreseNoduri.contains(adresaGazda)) {
-            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
-        }
-
-        if (adresaGazda != null) {
-            adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
-        } else {
-            throw new IllegalStateException("nu se poate gasi o adresa gazda");
         }
 
         return adresaGazda;
@@ -291,7 +297,7 @@ public final class BrokerService {
             }
         }
     }
-    
+
     private ArrayList<InetAddress> getInetAddresses() {
         ArrayList<InetAddress> inetAddressList = new ArrayList<>();
 
