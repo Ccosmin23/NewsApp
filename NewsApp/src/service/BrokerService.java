@@ -18,30 +18,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import architecture.RingManager;
 import model.broker.BrokerMessage;
 import model.news.NewsField;
 
 public final class BrokerService {
     InetAddress adresaPersonala;
     InetAddress nodUrmator;
+    ArrayList<InetAddress> adreseNoduri;
 
     ServerSocket receiverSocket;
-    ArrayList<InetAddress> adreseNoduri;
     AtomicBoolean programIsRunning;
     NewsField listaStiri;
-    private Timer heartbeatTimer;
+    private RingManager ringManager;
 
     public static BrokerService shared = new BrokerService();
 
     public BrokerService() {
         this.adreseNoduri = getInetAddresses();
         this.listaStiri = new NewsField(1, "Stiri");
+        this.ringManager = new RingManager(this);
     }
 
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
         findSuitableHostAddress();
-        startHeartbeat();
+        ringManager.startHeartbeat();
         receive().start();
         userInputHandler();
         System.out.println("\nS-a incheiat executia pentru acest broker!");
@@ -235,10 +237,9 @@ public final class BrokerService {
             oos.close();
             ois.close();
             socketComuicare.close();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("\n==============\n==============\na disparut nodul " + nodUrmator + "\n");
+//            e.printStackTrace();
         }
     }
 
@@ -302,34 +303,8 @@ public final class BrokerService {
     }
 
     // ========================================== toleranta la defectare ==========================================
-    private void startHeartbeat() {
-        heartbeatTimer = new Timer();
-
-        heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                sendHeartbeat();
-            }
-        }, 0, 5000); // la fiecare 5 secunde se trimite un semnal heartbeat ca sa verificam nodurile
-    }
-
-    private void sendHeartbeat() {
-        try {
-            InetAddress nextNode = nodUrmator != null ? nodUrmator : adreseNoduri.get(0);
-            send(nextNode);
-            System.out.println("\nnodul = " + nextNode + " inca merge");
-
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("\na picat ceva\n");
-        }
-    }
-
     private void stopHeartbeat() {
-        if (heartbeatTimer != null) {
-            heartbeatTimer.cancel();
-            heartbeatTimer.purge();
-        }
+        ringManager.stopHeartbeat();
     }
 
     // ========================================== IP addresses ==========================================
@@ -348,5 +323,21 @@ public final class BrokerService {
         }
 
         return inetAddressList;
+    }
+
+    public ArrayList<InetAddress> getAdreseNoduri() {
+        return adreseNoduri;
+    }
+
+    public void setAdreseNoduri(ArrayList<InetAddress> adreseNoduri) {
+        this.adreseNoduri = adreseNoduri;
+    }
+
+    public InetAddress getNodUrmator() {
+        return nodUrmator;
+    }
+
+    public void setNodUrmator(InetAddress nodUrmator) {
+        this.nodUrmator = nodUrmator;
     }
 }
