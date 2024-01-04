@@ -43,7 +43,7 @@ public final class BrokerService {
         System.out.println("\nS-a incheiat executia pentru acest broker!");
     }
 
-    private InetAddress findSuitableHostAddress() throws SocketException, UnknownHostException {
+    private void findSuitableHostAddress() throws SocketException, UnknownHostException {
         InetAddress adresaGazda = searchHostAddressIntoLocalMachine();
 
         if (adreseNoduri.contains(adresaGazda)) {
@@ -55,8 +55,6 @@ public final class BrokerService {
         } else {
             throw new IllegalStateException("nu se poate gasi o adresa gazda");
         }
-
-        return adresaGazda;
     }
 
     private InetAddress searchHostAddressIntoLocalMachine() throws SocketException {

@@ -23,14 +23,12 @@ public final class PublisherService {
     public void start() throws UnknownHostException, ClassNotFoundException {
         while (programHasBeenClosed != true) {
             switch (publisherView.afiseazaInterfata()) {
-                case "c": {
+                case "c":
                     createArticle();
                     break;
-                }
-                case "g": {
+                case "g":
                     publisherView.genereazaArticole();
                     break;
-                }
                 case "x":
                     closeProgram();
                     break;
