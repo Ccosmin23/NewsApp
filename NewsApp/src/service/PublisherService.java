@@ -1,4 +1,4 @@
-package model.publisher;
+package service;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,11 +11,12 @@ import model.broker.BrokerMessage;
 import model.news.NewsStory;
 import ui.PublisherView;
 
-public class Publisher {
+public final class PublisherService {
     private PublisherView uiPublisher;
     boolean programClosed = false;
+    public static PublisherService shared = new PublisherService();
 
-    public Publisher() {
+    public PublisherService() {
         uiPublisher = new PublisherView();
     }
 

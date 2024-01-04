@@ -1,4 +1,4 @@
-package model.broker;
+package service;
 
 import java.io.Console;
 import java.io.DataInputStream;
@@ -16,9 +16,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import model.broker.BrokerMessage;
 import model.news.NewsField;
 
-public class Broker {
+public final class BrokerService {
     InetAddress adresaPersonala;
     InetAddress nodUrmator;
     
@@ -26,6 +27,95 @@ public class Broker {
     ArrayList<InetAddress> adreseNoduri;
     AtomicBoolean ruleaza;
     NewsField listaStiri;
+
+    public static BrokerService shared = new BrokerService();
+
+    public BrokerService() {
+        this.adreseNoduri = getInetAddresses();
+        this.listaStiri = new NewsField(1, "Stiri");
+    }
+
+    private ArrayList<InetAddress> getInetAddresses() {
+        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
+
+        try {
+            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
+
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        return inetAddressList;
+    }
+
+    public void start () throws SocketException, UnknownHostException {
+        Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
+        InetAddress adresaGazda = null;
+
+        while (interfeteRetea.hasMoreElements()) {
+            NetworkInterface networkInterface = interfeteRetea.nextElement();
+            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+
+            while (inetAddresses.hasMoreElements()) {
+                InetAddress inetAddress = inetAddresses.nextElement();
+                if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
+                    adresaGazda = inetAddress;
+                    break;
+                }
+            }
+
+            if (adresaGazda != null) {
+                break;
+            }
+        }
+
+        if (adreseNoduri.contains(adresaGazda)) {
+            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
+        }
+
+        if (adresaGazda != null) {
+            adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
+        } else {
+            throw new IllegalStateException("Could not find a suitable address for adresaGazda");
+        }
+
+        this.ruleaza = new AtomicBoolean(true);
+        receive().start();
+        while (this.ruleaza.get() == true) {
+            Console consola = System.console();
+            switch (consola.readLine("-> ")) {
+                case "s": {
+                    try {
+                        send(InetAddress.getByName("192.168.30.10"));
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+
+                case "x": {
+                    this.ruleaza.set(false);
+                    try {
+                        receiverSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                }
+
+                default: {
+                    break;
+                }
+            }
+        }
+
+        System.out.println("AM TERMINAT!");
+    }
 
     public void send (InetAddress destinatie) throws ClassNotFoundException {
         try {
@@ -188,76 +278,5 @@ public class Broker {
                 }
             }
         });
-    }
-
-    public void start () throws SocketException, UnknownHostException {
-        Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
-        InetAddress adresaGazda = null;
-
-        while (interfeteRetea.hasMoreElements()) {
-            NetworkInterface networkInterface = interfeteRetea.nextElement();
-            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-
-            while (inetAddresses.hasMoreElements()) {
-                InetAddress inetAddress = inetAddresses.nextElement();
-                if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
-                    adresaGazda = inetAddress;
-                    break;
-                }
-            }
-
-            if (adresaGazda != null) {
-                break;
-            }
-        }
-
-        if (adreseNoduri.contains(adresaGazda)) {
-            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
-        }
-
-        if (adresaGazda != null) {
-            adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
-        } else {
-            throw new IllegalStateException("Could not find a suitable address for adresaGazda");
-        }
-
-        this.ruleaza = new AtomicBoolean(true);
-        receive().start();
-        while (this.ruleaza.get() == true) {
-            Console consola = System.console();
-            switch (consola.readLine("-> ")) {
-                case "s": {
-                    try {
-                        send(InetAddress.getByName("192.168.30.10"));
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                }
-
-                case "x": {
-                    this.ruleaza.set(false);
-                    try {
-                        receiverSocket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                }
-
-                default: {
-                    break;
-                }
-            }
-        }
-
-        System.out.println("AM TERMINAT!");
-    }
-
-
-    public Broker (ArrayList<InetAddress> listaAdreseMasini) {
-        this.adreseNoduri = listaAdreseMasini;
-        this.listaStiri = new NewsField(1, "Stiri");
     }
 }

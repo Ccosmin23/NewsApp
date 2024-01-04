@@ -1,4 +1,4 @@
-package model.subscriber;
+package service;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,7 +13,8 @@ import model.news.NewsField;
 import model.news.NewsStory;
 import ui.SubscriberView;
 
-public class Subscriber {
+public final class SubscriberService {
+    public static SubscriberService shared = new SubscriberService();
     private NewsField listaArticole;
 
     public void primesteArticole (InetAddress destinatie) throws ClassNotFoundException {

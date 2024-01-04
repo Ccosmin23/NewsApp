@@ -1,13 +1,10 @@
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 
-import model.broker.Broker;
-import model.publisher.Publisher;
-import model.subscriber.Subscriber;
+import service.BrokerService;
+import service.PublisherService;
+import service.SubscriberService;
 import ui.MainView;
-import utils.StringUtils;
 
 public class Main {
     public static void main(String[] args) {
@@ -38,42 +35,28 @@ public class Main {
     }
 
     public static void startAsAPublisher() {
-        Publisher publisher = new Publisher();
-
         try {
-            publisher.start();
+            PublisherService.shared.start();
         } catch (UnknownHostException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
     public static void startAsASubscriber() {
-        Subscriber subscriber = new Subscriber();
-
         try {
-            subscriber.start();
+            SubscriberService.shared.start();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
 
     public static void startAsABroker() {
-        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
-
         try {
-            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
-
-            Broker broker = new Broker(inetAddressList);
-            broker.start();
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+            BrokerService.shared.start();
         } catch (SocketException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
         }
     }
 }
