@@ -210,7 +210,7 @@ public final class BrokerService {
                                     replica.seteazaComanda("replicare");
                                     replica.seteazaStirea(mesajReceptionat.primesteStirea());
 
-//                                    replicaArticolLaVecin(replica);
+                                    replicaArticolLaVecin(replica);
 
                                     break;
                                 }
