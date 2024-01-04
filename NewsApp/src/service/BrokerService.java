@@ -43,38 +43,6 @@ public final class BrokerService {
         System.out.println("\nS-a incheiat executia pentru acest broker!");
     }
 
-    private void userInputHandler() throws UnknownHostException {
-        while (this.programIsRunning.get() == true) {
-            Console consola = System.console();
-            switch (consola.readLine("-> ")) {
-                case "s": {
-                    try {
-                        send(InetAddress.getByName("192.168.30.10"));
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                }
-
-                case "x": {
-                    this.programIsRunning.set(false);
-
-                    try {
-                        receiverSocket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                }
-
-                default: {
-                    break;
-                }
-            }
-        }
-    }
-
     private InetAddress findSuitableHostAddress() throws SocketException, UnknownHostException {
         InetAddress adresaGazda = null;
         Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
@@ -292,6 +260,38 @@ public final class BrokerService {
         }
     }
 
+    private void userInputHandler() throws UnknownHostException {
+        while (this.programIsRunning.get() == true) {
+            Console consola = System.console();
+            switch (consola.readLine("-> ")) {
+                case "s": {
+                    try {
+                        send(InetAddress.getByName("192.168.30.10"));
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+
+                case "x": {
+                    this.programIsRunning.set(false);
+
+                    try {
+                        receiverSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                }
+
+                default: {
+                    break;
+                }
+            }
+        }
+    }
+    
     private ArrayList<InetAddress> getInetAddresses() {
         ArrayList<InetAddress> inetAddressList = new ArrayList<>();
 
