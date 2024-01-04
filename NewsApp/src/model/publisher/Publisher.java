@@ -13,32 +13,38 @@ import ui.PublisherView;
 
 public class Publisher {
     private PublisherView uiPublisher;
+    boolean programClosed = false;
+
+    public Publisher() {
+        uiPublisher = new PublisherView();
+    }
 
     public void trimiteStirea (InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
         try {
-            ObjectOutputStream oos;
-            ObjectInputStream ois;
-            BrokerMessage msg = new BrokerMessage("Hello broker de inel", destinatie);
+            ObjectOutputStream objectOutputStream;
+            ObjectInputStream objectInputStream;
+
+            BrokerMessage brokerMessage = new BrokerMessage("Hello broker de inel", destinatie);
             Socket socketComuicare = new Socket(destinatie, 9700);
             BrokerMessage raspuns;
 
-            msg.seteazaComanda("publica");
-            msg.seteazaStirea(stirea);
+            brokerMessage.seteazaComanda("publica");
+            brokerMessage.seteazaStirea(stirea);
 
-            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
-            ois = new ObjectInputStream(socketComuicare.getInputStream());
-            
-            oos.writeObject(msg);
-            oos.flush();
+            objectOutputStream = new ObjectOutputStream(socketComuicare.getOutputStream());
+            objectInputStream = new ObjectInputStream(socketComuicare.getInputStream());
+
+            objectOutputStream.writeObject(brokerMessage);
+            objectOutputStream.flush();
 
             System.out.println("Publicare trimisa");
 
-            raspuns = (BrokerMessage) ois.readObject();
+            raspuns = (BrokerMessage) objectInputStream.readObject();
             System.out.println("Raspunsul server-ului: " + raspuns.primesteMesaj());
 
             socketComuicare.close();
-            oos.close();
-            ois.close();
+            objectOutputStream.close();
+            objectInputStream.close();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -46,32 +52,40 @@ public class Publisher {
         }
     }
 
-    public void start () throws UnknownHostException, ClassNotFoundException {
-        PublisherView uiPublisher = new PublisherView();
-        boolean terminat = false;
-
-        while (terminat != true) {
+    public void start() throws UnknownHostException, ClassNotFoundException {
+        while (programClosed != true) {
             switch (uiPublisher.afiseazaInterfata()) {
                 case "c": {
-                    NewsStory stireaCreata = uiPublisher.creeazaArticol();
-                    if (stireaCreata != null) {
-                        trimiteStirea(InetAddress.getByName("192.168.30.10"), stireaCreata);
-                    }
-
+                    createArticle();
                     break;
                 }
-
                 case "g": {
                     uiPublisher.genereazaArticole();
                     break;
                 }
-
-                case "x": {
-                    // Închidere program
-                    terminat = true;
-                    uiPublisher.inchideInterfata();
-                }
+                case "x":
+                    closeProgram();
+                    break;
+                default:
+                    System.out.println("Optiune invailda");
             }
         }
+    }
+
+    private void createArticle() throws UnknownHostException {
+        NewsStory stireaCreata = uiPublisher.creeazaArticol();
+
+        if (stireaCreata != null) {
+            try {
+                trimiteStirea(InetAddress.getByName("192.168.30.10"), stireaCreata);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void closeProgram() {
+        programClosed = true;
+        uiPublisher.inchideInterfata();
     }
 }

@@ -6,7 +6,7 @@ import java.util.Scanner;
 import model.news.NewsStory;
 
 public class PublisherView {
-    public Scanner scannerTastatura;
+    public Scanner scannerTastatura = new Scanner(System.in);
 
     public PublisherView() {
 
@@ -14,8 +14,6 @@ public class PublisherView {
 
     public String afiseazaInterfata () {
         String optiune;
-        
-        scannerTastatura = new Scanner(System.in);
 
         System.out.println("Optiunile disponibile sunt:\n");
         System.out.println("[c] -> creeaza un articol");
@@ -58,7 +56,7 @@ public class PublisherView {
 
         if (listaLinii.size() != 0) {
             for (String linie : listaLinii) {
-                continut += linie + "\n";    
+                continut += linie + "\n";
             }
 
             articolStire = new NewsStory(0, titluArticol, continut);

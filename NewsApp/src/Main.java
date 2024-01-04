@@ -38,37 +38,38 @@ public class Main {
     }
 
     public static void startAsAPublisher() {
-        Publisher masina = new Publisher();
+        Publisher publisher = new Publisher();
 
         try {
-            masina.start();
+            publisher.start();
         } catch (UnknownHostException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
     public static void startAsASubscriber() {
-        Subscriber masina = new Subscriber();
+        Subscriber subscriber = new Subscriber();
 
         try {
-            masina.start();
+            subscriber.start();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
 
     public static void startAsABroker() {
-        ArrayList<InetAddress> adreseRetea = new ArrayList<>();
+        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
 
         try {
-            adreseRetea.add(InetAddress.getByName("192.168.30.4"));
-            adreseRetea.add(InetAddress.getByName("192.168.30.7"));
-            adreseRetea.add(InetAddress.getByName("192.168.30.9"));
-            adreseRetea.add(InetAddress.getByName("192.168.30.10"));
-            adreseRetea.add(InetAddress.getByName("192.168.30.12"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
+            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
 
-            Broker masina = new Broker(adreseRetea);
-            masina.start();
+            Broker broker = new Broker(inetAddressList);
+            broker.start();
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (SocketException e) {
