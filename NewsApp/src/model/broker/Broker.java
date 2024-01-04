@@ -116,11 +116,11 @@ public class Broker {
                                     listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
                                     oos.writeObject(raspuns);
 
-                                    System.out.println("Aduc și la restul sistemului articolul introdus.");
+                                    System.out.println("Aduc si la restul sistemului articolul introdus.");
                                     replica.seteazaComanda("replicare");
                                     replica.seteazaStirea(mesajReceptionat.primesteStirea());
 
-                                    replicaArticolLaVecin(replica);
+//                                    replicaArticolLaVecin(replica);
 
                                     break;
                                 }
@@ -193,9 +193,7 @@ public class Broker {
     public void start () throws SocketException, UnknownHostException {
         Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
         InetAddress adresaGazda = null;
-        
-        // Verifică dacă pe mașina care execută programul are o interfață cu adresa
-        // ip din lista de adrese de mașini participante în rețeaua cu topologie de inel
+
         while (interfeteRetea.hasMoreElements()) {
             NetworkInterface networkInterface = interfeteRetea.nextElement();
             Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
@@ -212,14 +210,16 @@ public class Broker {
                 break;
             }
         }
-        
-        // Determină nodul următor cu care mașina broker va comunica folosind
-        // lista cu adresele ip definite
+
         if (adreseNoduri.contains(adresaGazda)) {
             this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
         }
 
-        adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
+        if (adresaGazda != null) {
+            adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
+        } else {
+            throw new IllegalStateException("Could not find a suitable address for adresaGazda");
+        }
 
         this.ruleaza = new AtomicBoolean(true);
         receive().start();
@@ -242,7 +242,7 @@ public class Broker {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    
+
                     break;
                 }
 
@@ -254,6 +254,7 @@ public class Broker {
 
         System.out.println("AM TERMINAT!");
     }
+
 
     public Broker (ArrayList<InetAddress> listaAdreseMasini) {
         this.adreseNoduri = listaAdreseMasini;
