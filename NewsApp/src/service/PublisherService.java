@@ -12,12 +12,12 @@ import model.news.NewsStory;
 import ui.PublisherView;
 
 public final class PublisherService {
-    private PublisherView uiPublisher;
-    boolean programClosed = false;
+    private PublisherView publisherView;
+    boolean programHasBeenClosed = false;
     public static PublisherService shared = new PublisherService();
 
     public PublisherService() {
-        uiPublisher = new PublisherView();
+        publisherView = new PublisherView();
     }
 
     public void trimiteStirea (InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
@@ -54,14 +54,14 @@ public final class PublisherService {
     }
 
     public void start() throws UnknownHostException, ClassNotFoundException {
-        while (programClosed != true) {
-            switch (uiPublisher.afiseazaInterfata()) {
+        while (programHasBeenClosed != true) {
+            switch (publisherView.afiseazaInterfata()) {
                 case "c": {
                     createArticle();
                     break;
                 }
                 case "g": {
-                    uiPublisher.genereazaArticole();
+                    publisherView.genereazaArticole();
                     break;
                 }
                 case "x":
@@ -74,7 +74,7 @@ public final class PublisherService {
     }
 
     private void createArticle() throws UnknownHostException {
-        NewsStory stireaCreata = uiPublisher.creeazaArticol();
+        NewsStory stireaCreata = publisherView.creeazaArticol();
 
         if (stireaCreata != null) {
             try {
@@ -86,7 +86,7 @@ public final class PublisherService {
     }
 
     private void closeProgram() {
-        programClosed = true;
-        uiPublisher.inchideInterfata();
+        programHasBeenClosed = true;
+        publisherView.inchideInterfata();
     }
 }

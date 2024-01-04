@@ -17,6 +17,20 @@ public final class SubscriberService {
     public static SubscriberService shared = new SubscriberService();
     private NewsField listaArticole;
 
+    public void start () throws UnknownHostException {
+        SubscriberView uiAbonat = new SubscriberView();
+
+        // uiAbonat.afiseazaInterfata();
+        // uiAbonat.inchideInterfata();
+
+        try {
+            primesteArticole(InetAddress.getByName("192.168.30.10"));
+            listeazaStiri();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void primesteArticole (InetAddress destinatie) throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
@@ -62,20 +76,6 @@ public final class SubscriberService {
             }
         } else {
             System.out.println("Nu exista articole publicate in sistem.");
-        }
-    }
-
-    public void start () throws UnknownHostException {
-        SubscriberView uiAbonat = new SubscriberView();
-
-        // uiAbonat.afiseazaInterfata();
-        // uiAbonat.inchideInterfata();
-
-        try {
-            primesteArticole(InetAddress.getByName("192.168.30.10"));
-            listeazaStiri();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
         }
     }
 }
