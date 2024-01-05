@@ -8,6 +8,7 @@ import ui.MainView;
 
 public class Main {
     public static void main(String[] args) {
+
         if (args.length == 0) {
             MainView.showMenuMessages();
             return;
@@ -26,6 +27,9 @@ public class Main {
                 break;
             case "broker":
                 startAsABroker();
+                break;
+            case "logger":
+                startAsALogger();
                 break;
             default: {
                 MainView.showMenuMessages();
@@ -58,5 +62,9 @@ public class Main {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void startAsALogger() {
+
     }
 }
