@@ -15,8 +15,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import architecture.RingManager;
 import model.broker.BrokerMessage;
@@ -38,6 +37,22 @@ public final class BrokerService {
         this.adreseNoduri = getInetAddresses();
         this.listaStiri = new NewsField(1, "Stiri");
         this.ringManager = new RingManager(this);
+    }
+
+    private static final Logger logger = Logger.getLogger(BrokerService.class.getName());
+
+    public void sendLogToLogger(String logMessage) {
+        String loggerIpAddress = "192.168.30.13";
+
+        try (Socket socket = new Socket(loggerIpAddress, 9700);
+             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
+
+            // Send log message to logger
+            oos.writeObject(logMessage);
+        } catch (IOException e) {
+            // Handle exception
+            logger.warning("Failed to send log message to logger: " + e.getMessage());
+        }
     }
 
     // ========================================== start() ==========================================
@@ -103,6 +118,7 @@ public final class BrokerService {
 
                 try {
                     receiverSocket = new ServerSocket(9700);
+
                     while (programIsRunning.get() == true) {
                         try {
                             clientSocket = receiverSocket.accept();
@@ -136,6 +152,7 @@ public final class BrokerService {
                     }
 
                     System.out.println("AM ÎNCHEIAT ASCULTAREA!");
+                    sendLogToLogger("si eu am incheiat");
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -238,8 +255,7 @@ public final class BrokerService {
             ois.close();
             socketComuicare.close();
         } catch (IOException e) {
-            System.out.println("\n==============\n==============\na disparut nodul " + nodUrmator + "\n");
-//            e.printStackTrace();
+            sendLogToLogger("\n======\nUN MESAJ NOU NOUT");
         }
     }
 
@@ -262,10 +278,8 @@ public final class BrokerService {
             oos.close();
             ois.close();
             socketComuicare.close();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            sendLogToLogger("\n======\nUN MESAJ NOU NOUT");
         }
     }
 
