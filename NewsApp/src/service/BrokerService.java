@@ -100,6 +100,7 @@ public final class BrokerService {
 
                 try {
                     receiverSocket = new ServerSocket(9700);
+                    LoggerService.shared.sendLogToLogger(adresaPersonala + " a fost pornit");
 
                     while (programIsRunning.get() == true) {
                         try {
@@ -129,7 +130,7 @@ public final class BrokerService {
                             clientSocket.close();
 
                         } catch (SocketException e) {
-                            LoggerService.shared.sendLogToLogger(e.getMessage());
+                            System.out.println(e.getMessage());
                         } catch (ClassNotFoundException e) {
                             LoggerService.shared.sendLogToLogger(e.getMessage());
                         }
@@ -344,5 +345,13 @@ public final class BrokerService {
 
     public void setNodUrmator(InetAddress nodUrmator) {
         this.nodUrmator = nodUrmator;
+    }
+
+    public InetAddress getAdresaPersonala() {
+        return adresaPersonala;
+    }
+
+    public void setAdresaPersonala(InetAddress adresaPersonala) {
+        this.adresaPersonala = adresaPersonala;
     }
 }

@@ -1,6 +1,7 @@
 package architecture;
 
 import service.BrokerService;
+import service.LoggerService;
 
 import java.net.InetAddress;
 import java.util.Timer;
@@ -30,7 +31,7 @@ public class RingManager {
             brokerService.send(nextNode);
 
         } catch (ClassNotFoundException e) {
-            System.out.println("\nnodul = " + brokerService.getNodUrmator() + " inca merge");
+            LoggerService.shared.sendLogToLogger("eroare in metoda heartBeat");
         }
     }
 
