@@ -10,18 +10,33 @@ import java.net.UnknownHostException;
 import model.broker.BrokerMessage;
 import model.news.NewsStory;
 import ui.PublisherView;
+import utils.InetAddressUtils;
+import utils.StringUtils;
 
 public final class PublisherService {
-    private PublisherView publisherView;
-    boolean programHasBeenClosed = false;
     public static PublisherService shared = new PublisherService();
+
+    private PublisherView publisherView;
+    boolean programIsRunning = true;
+
+    String hostAddress = ""; {
+        try {
+            hostAddress = InetAddressUtils.getLocalAddress().getHostAddress();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    String boldedHostAddress = StringUtils.applyBoldTo(hostAddress, false);
 
     public PublisherService() {
         publisherView = new PublisherView();
     }
 
     public void start() throws UnknownHostException, ClassNotFoundException {
-        while (programHasBeenClosed != true) {
+        LoggerService.shared.sendLogToLogger("a fost creat un publisher cu adresa IP " + boldedHostAddress);
+
+        while (programIsRunning) {
             switch (publisherView.afiseazaInterfata()) {
                 case "c":
                     createArticle();
@@ -56,16 +71,14 @@ public final class PublisherService {
             objectOutputStream.writeObject(brokerMessage);
             objectOutputStream.flush();
 
-            System.out.println("Publicare trimisa");
+            LoggerService.shared.sendLogToLogger("publisher-ul " + boldedHostAddress + " a trimis o stire");
 
             raspuns = (BrokerMessage) objectInputStream.readObject();
-            System.out.println("Raspunsul server-ului: " + raspuns.primesteMesaj());
+            LoggerService.shared.sendLogToLogger("Raspunsul server-ului pentru " + boldedHostAddress + ": " + raspuns.primesteMesaj());
 
             socketComuicare.close();
             objectOutputStream.close();
             objectInputStream.close();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -73,18 +86,23 @@ public final class PublisherService {
 
     private void createArticle() throws UnknownHostException {
         NewsStory stireaCreata = publisherView.creeazaArticol();
+        String brokerIPAddress = "192.168.30.10";
 
         if (stireaCreata != null) {
             try {
-                trimiteStirea(InetAddress.getByName("192.168.30.10"), stireaCreata);
+                trimiteStirea(InetAddress.getByName(brokerIPAddress), stireaCreata);
+                LoggerService.shared.sendLogToLogger("publisher-ul " + boldedHostAddress + " a creat stirea cu ID-ul " + stireaCreata.getId());
+
             } catch (ClassNotFoundException e) {
+                LoggerService.shared.sendLogToLogger("publisher-ul " + boldedHostAddress + " a incercat sa creeze stirea" + stireaCreata.getId());
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void closeProgram() {
-        programHasBeenClosed = true;
+    private void closeProgram() throws UnknownHostException {
+        programIsRunning = false;
         publisherView.inchideInterfata();
+        LoggerService.shared.sendLogToLogger("publisher-ul cu adresa IP " + boldedHostAddress + " a fost inchis");
     }
 }
