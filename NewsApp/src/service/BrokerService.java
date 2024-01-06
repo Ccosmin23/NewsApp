@@ -208,10 +208,10 @@ public final class BrokerService {
         oos.writeObject(raspuns);
 
         if (mesajReceptionat.primesteAdresa().equals(nodUrmator) != true) {
-            LoggerService.shared.sendLogToLogger(" - replica articolul la urmatorul vecin");
+            LoggerService.shared.sendLogToLogger(" - incearca replicarea articolului la urmatorul vecin " + nodUrmator);
             replicaArticolLaVecin(mesajReceptionat);
         } else {
-            LoggerService.shared.sendLogToLogger(" -nu mai replica si la nodul originar.");
+            LoggerService.shared.sendLogToLogger(" - a ajuns la capat si nu mai replica si la nodul originar");
         }
     }
 
@@ -254,9 +254,9 @@ public final class BrokerService {
             oos.close();
             ois.close();
             socketComuicare.close();
+
         } catch (IOException e) {
-//            System.out.println("unu doi");
-//            LoggerService.shared.sendLogToLogger("lipseste nodul " + nodUrmator + " din inelul construit");
+//            LoggerService.shared.sendLogToLogger("Sunt " + boldedHostAddress + " si nu am primit inca niciun mesaj de la: " + nodUrmator);
         }
     }
 
@@ -276,14 +276,14 @@ public final class BrokerService {
             raspuns = (BrokerMessage) ois.readObject();
 
             if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger(" - a primit de la vecin, mesajul urmator: " + raspuns.primesteMesaj());
+                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + nodUrmator + ") measajul: " + raspuns.primesteMesaj());
             }
 
             oos.close();
             ois.close();
             socketComuicare.close();
         } catch (IOException e) {
-            LoggerService.shared.sendLogToLogger(" -nu se poate replica articolul la vecin");
+            LoggerService.shared.sendLogToLogger(" - raspuns: nu se poate replica articolul la vecin");
         }
     }
 
