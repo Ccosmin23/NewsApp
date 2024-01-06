@@ -15,7 +15,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 
 import architecture.RingManager;
 import model.broker.BrokerMessage;
@@ -39,29 +38,12 @@ public final class BrokerService {
         this.ringManager = new RingManager(this);
     }
 
-    private static final Logger logger = Logger.getLogger(BrokerService.class.getName());
-
-    public void sendLogToLogger(String logMessage) {
-        String loggerIpAddress = "192.168.30.13";
-
-        try (Socket socket = new Socket(loggerIpAddress, 9700);
-             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
-
-            // Send log message to logger
-            oos.writeObject(logMessage);
-        } catch (IOException e) {
-            // Handle exception
-            logger.warning("Failed to send log message to logger: " + e.getMessage());
-        }
-    }
-
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
         findSuitableHostAddress();
         ringManager.startHeartbeat();
         receive().start();
         userInputHandler();
-        System.out.println("\nS-a incheiat executia pentru acest broker!");
     }
 
     private void findSuitableHostAddress() throws SocketException, UnknownHostException {
@@ -74,7 +56,7 @@ public final class BrokerService {
         if (adresaGazda != null) {
             adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
         } else {
-            throw new IllegalStateException("nu se poate gasi o adresa gazda");
+            LoggerService.shared.sendLogToLogger("nu se poate gasi o adresa gazda");
         }
     }
 
@@ -122,7 +104,7 @@ public final class BrokerService {
                     while (programIsRunning.get() == true) {
                         try {
                             clientSocket = receiverSocket.accept();
-                            System.out.println("Mesajul de la " + clientSocket.getInetAddress().toString() + " este receptionat!");
+//                            LoggerService.shared.sendLogToLogger("Mesajul de la " + clientSocket.getInetAddress().toString() + " este receptionat!");
 
                             clientIStream = new DataInputStream(clientSocket.getInputStream());
                             clientOStream = new DataOutputStream(clientSocket.getOutputStream());
@@ -132,7 +114,9 @@ public final class BrokerService {
 
                             mesajReceptionat = (BrokerMessage) ois.readObject();
 
-                            System.out.println(mesajReceptionat.primesteComanda());
+                            if (mesajReceptionat != null) {
+                                LoggerService.shared.sendLogToLogger(mesajReceptionat.primesteComanda());
+                            }
 
                             try {
                                 process(mesajReceptionat, oos, ois, clientSocket);
@@ -145,17 +129,16 @@ public final class BrokerService {
                             clientSocket.close();
 
                         } catch (SocketException e) {
-                            System.out.println(e.getMessage());
+                            LoggerService.shared.sendLogToLogger(e.getMessage());
                         } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+                            LoggerService.shared.sendLogToLogger(e.getMessage());
                         }
                     }
 
-                    System.out.println("AM ÎNCHEIAT ASCULTAREA!");
-                    sendLogToLogger("si eu am incheiat");
+                    LoggerService.shared.sendLogToLogger(adresaPersonala + " a fost oprit");
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LoggerService.shared.sendLogToLogger(e.getMessage());
                 }
             }
         });
@@ -173,7 +156,8 @@ public final class BrokerService {
                 replicate(mesajReceptionat, oos, clientSocket);
                 break;
             default:
-                handleDefaultCase(mesajReceptionat, oos);
+                break;
+//                handleDefaultCase(mesajReceptionat, oos);
         }
     }
 
@@ -181,11 +165,12 @@ public final class BrokerService {
         BrokerMessage raspuns = new BrokerMessage("Ti-am receptionat publicarea!", adresaPersonala);
         BrokerMessage replica = new BrokerMessage("Replica mesaj, replicare articol!", adresaPersonala);
 
-        System.out.println("Am primit mesaj de la PUBLISHER (publicator)!");
+        LoggerService.shared.sendLogToLogger("Am primit mesaj de la PUBLISHER (publicator)!");
+
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
-        System.out.println("Aduc si la restul sistemului articolul introdus.");
+        LoggerService.shared.sendLogToLogger("Aduc si la restul sistemului articolul introdus.");
         replica.seteazaComanda("replicare");
         replica.seteazaStirea(mesajReceptionat.primesteStirea());
 
@@ -197,36 +182,35 @@ public final class BrokerService {
 
         raspuns.seteazaListaStiri(listaStiri);
 
-        System.out.println("Am primit mesaj de la SUBSCRIBER (abonat)!");
+        LoggerService.shared.sendLogToLogger("Am primit mesaj de la SUBSCRIBER (abonat)!");
         oos.writeObject(raspuns);
     }
 
     private void replicate(BrokerMessage mesajReceptionat, ObjectOutputStream oos, Socket clientSocket) throws IOException, ClassNotFoundException {
         BrokerMessage raspuns = new BrokerMessage("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
 
-        System.out.println("Am primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().toString());
+        LoggerService.shared.sendLogToLogger("Am primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().toString());
 
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
         if (mesajReceptionat.primesteAdresa().equals(nodUrmator) != true) {
-            System.out.println("Îl replic articolul la următorul vecin.");
+            LoggerService.shared.sendLogToLogger("Îl replic articolul la următorul vecin.");
             replicaArticolLaVecin(mesajReceptionat);
         } else {
-            System.out.println("Nu mai replic și la nodul originar.");
+            LoggerService.shared.sendLogToLogger("Nu mai replic și la nodul originar.");
         }
     }
 
     private void handleDefaultCase(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws ClassNotFoundException, IOException, InterruptedException {
         if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
             BrokerMessage raspuns = new BrokerMessage("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
-
-            System.out.println("Sunt eu!");
             oos.writeObject(raspuns);
+
         } else {
             BrokerMessage raspuns = new BrokerMessage("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
 
-            System.out.println("Nu sunt eu!");
+            LoggerService.shared.sendLogToLogger(adresaPersonala + "trimite mesajul mai departe");
             oos.writeObject(raspuns);
             Thread.sleep(500);
             send(mesajReceptionat.primesteAdresa());
@@ -249,13 +233,17 @@ public final class BrokerService {
             oos.flush();
 
             raspuns = (BrokerMessage) ois.readObject();
-            System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
+
+            if (raspuns != null) {
+                LoggerService.shared.sendLogToLogger("Mesajul de la vecin: " + raspuns.primesteMesaj());
+            }
 
             oos.close();
             ois.close();
             socketComuicare.close();
         } catch (IOException e) {
-            sendLogToLogger("\n======\nUN MESAJ NOU NOUT");
+//            System.out.println("unu doi");
+//            LoggerService.shared.sendLogToLogger("lipseste nodul " + nodUrmator + " din inelul construit");
         }
     }
 
@@ -273,13 +261,16 @@ public final class BrokerService {
             oos.flush();
 
             raspuns = (BrokerMessage) ois.readObject();
-            System.out.println("Mesajul de la vecin: " + raspuns.primesteMesaj());
+
+            if (raspuns != null) {
+                LoggerService.shared.sendLogToLogger("Mesajul de la vecin: " + raspuns.primesteMesaj());
+            }
 
             oos.close();
             ois.close();
             socketComuicare.close();
         } catch (IOException e) {
-            sendLogToLogger("\n======\nUN MESAJ NOU NOUT");
+            LoggerService.shared.sendLogToLogger("nu se poate replica articolul la vecin");
         }
     }
 
@@ -333,7 +324,7 @@ public final class BrokerService {
             inetAddressList.add(InetAddress.getByName("192.168.30.12"));
 
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            LoggerService.shared.sendLogToLogger(e.getMessage());
         }
 
         return inetAddressList;
