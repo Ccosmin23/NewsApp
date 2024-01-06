@@ -19,8 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import architecture.RingManager;
 import model.broker.BrokerMessage;
 import model.news.NewsField;
+import utils.InetAddressUtils;
+import utils.StringUtils;
 
 public final class BrokerService {
+    public static BrokerService shared = new BrokerService();
+
     InetAddress adresaPersonala;
     InetAddress nodUrmator;
     ArrayList<InetAddress> adreseNoduri;
@@ -28,9 +32,15 @@ public final class BrokerService {
     ServerSocket receiverSocket;
     AtomicBoolean programIsRunning;
     NewsField listaStiri;
-    private RingManager ringManager;
 
-    public static BrokerService shared = new BrokerService();
+    private RingManager ringManager;
+    private String boldedHostAddress; {
+        try {
+            boldedHostAddress = StringUtils.applyBoldTo(InetAddressUtils.getLocalAddress().getHostAddress(), false);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public BrokerService() {
         this.adreseNoduri = getInetAddresses();
@@ -100,7 +110,7 @@ public final class BrokerService {
 
                 try {
                     receiverSocket = new ServerSocket(9700);
-                    LoggerService.shared.sendLogToLogger(adresaPersonala + " a fost pornit");
+                    LoggerService.shared.sendLogToLogger("broker-ul " + boldedHostAddress + " a fost pornit");
 
                     while (programIsRunning.get() == true) {
                         try {
@@ -136,7 +146,7 @@ public final class BrokerService {
                         }
                     }
 
-                    LoggerService.shared.sendLogToLogger(adresaPersonala + " a fost oprit");
+                    LoggerService.shared.sendLogToLogger("broker-ul " + boldedHostAddress + " a fost oprit");
 
                 } catch (IOException e) {
                     LoggerService.shared.sendLogToLogger(e.getMessage());
