@@ -34,7 +34,7 @@ public final class PublisherService {
     }
 
     public void start() throws UnknownHostException, ClassNotFoundException {
-        LoggerService.shared.sendLogToLogger("a fost creat un publisher cu adresa IP " + boldedHostAddress);
+        LoggerService.shared.sendLogToLogger("A fost creat un publisher cu adresa IP " + boldedHostAddress);
 
         while (programIsRunning) {
             switch (publisherView.afiseazaInterfata()) {
@@ -71,10 +71,10 @@ public final class PublisherService {
             objectOutputStream.writeObject(brokerMessage);
             objectOutputStream.flush();
 
-            LoggerService.shared.sendLogToLogger("publisher-ul " + boldedHostAddress + " a trimis o stire");
+            LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a trimis o stire");
 
             raspuns = (BrokerMessage) objectInputStream.readObject();
-            LoggerService.shared.sendLogToLogger("Raspunsul server-ului pentru " + boldedHostAddress + ": " + raspuns.primesteMesaj());
+            LoggerService.shared.sendLogToLogger("\nRaspunsul server-ului pentru publisher-ul " + boldedHostAddress + ": " + raspuns.primesteMesaj());
 
             socketComuicare.close();
             objectOutputStream.close();
@@ -91,10 +91,10 @@ public final class PublisherService {
         if (stireaCreata != null) {
             try {
                 trimiteStirea(InetAddress.getByName(brokerIPAddress), stireaCreata);
-                LoggerService.shared.sendLogToLogger("publisher-ul " + boldedHostAddress + " a creat stirea cu ID-ul " + stireaCreata.getId());
+                LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a creat cu succes stirea cu ID-ul " + stireaCreata.getId());
 
             } catch (ClassNotFoundException e) {
-                LoggerService.shared.sendLogToLogger("publisher-ul " + boldedHostAddress + " a incercat sa creeze stirea" + stireaCreata.getId());
+                LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a incercat sa creeze stirea" + stireaCreata.getId());
                 throw new RuntimeException(e);
             }
         }
@@ -103,6 +103,6 @@ public final class PublisherService {
     private void closeProgram() throws UnknownHostException {
         programIsRunning = false;
         publisherView.inchideInterfata();
-        LoggerService.shared.sendLogToLogger("publisher-ul cu adresa IP " + boldedHostAddress + " a fost inchis");
+        LoggerService.shared.sendLogToLogger("Publisher-ul cu adresa IP " + boldedHostAddress + " a fost inchis");
     }
 }

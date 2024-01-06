@@ -110,7 +110,7 @@ public final class BrokerService {
 
                 try {
                     receiverSocket = new ServerSocket(9700);
-                    LoggerService.shared.sendLogToLogger("broker-ul " + boldedHostAddress + " a fost pornit");
+                    LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " a fost pornit");
 
                     while (programIsRunning.get() == true) {
                         try {
@@ -146,7 +146,7 @@ public final class BrokerService {
                         }
                     }
 
-                    LoggerService.shared.sendLogToLogger("broker-ul " + boldedHostAddress + " a fost oprit");
+                    LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " a fost oprit");
 
                 } catch (IOException e) {
                     LoggerService.shared.sendLogToLogger(e.getMessage());
@@ -173,15 +173,15 @@ public final class BrokerService {
     }
 
     private void publish(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws ClassNotFoundException, IOException {
-        BrokerMessage raspuns = new BrokerMessage("Ti-am receptionat publicarea!", adresaPersonala);
+        BrokerMessage raspuns = new BrokerMessage("Publicare receptionata", adresaPersonala);
         BrokerMessage replica = new BrokerMessage("Replica mesaj, replicare articol!", adresaPersonala);
 
-        LoggerService.shared.sendLogToLogger("Am primit mesaj de la PUBLISHER (publicator)!");
+        LoggerService.shared.sendLogToLogger("\nBroker-ul " + boldedHostAddress  + " a primit mesaj de la publisher");
 
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
-        LoggerService.shared.sendLogToLogger("Aduc si la restul sistemului articolul introdus.");
+        LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " transmite articolul introdus in intreg sistemul");
         replica.seteazaComanda("replicare");
         replica.seteazaStirea(mesajReceptionat.primesteStirea());
 
@@ -193,33 +193,35 @@ public final class BrokerService {
 
         raspuns.seteazaListaStiri(listaStiri);
 
-        LoggerService.shared.sendLogToLogger("Am primit mesaj de la SUBSCRIBER (abonat)!");
+        LoggerService.shared.sendLogToLogger("\nAm primit mesaj de la subscriber");
         oos.writeObject(raspuns);
     }
 
     private void replicate(BrokerMessage mesajReceptionat, ObjectOutputStream oos, Socket clientSocket) throws IOException, ClassNotFoundException {
         BrokerMessage raspuns = new BrokerMessage("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
 
-        LoggerService.shared.sendLogToLogger("Am primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().toString());
+        LoggerService.shared.sendLogToLogger("\n==============================================================================\n"
+                + "Broker-ul " + boldedHostAddress
+                + "\n - a primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().getHostAddress().toString());
 
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
         if (mesajReceptionat.primesteAdresa().equals(nodUrmator) != true) {
-            LoggerService.shared.sendLogToLogger("Îl replic articolul la următorul vecin.");
+            LoggerService.shared.sendLogToLogger(" - replica articolul la urmatorul vecin");
             replicaArticolLaVecin(mesajReceptionat);
         } else {
-            LoggerService.shared.sendLogToLogger("Nu mai replic și la nodul originar.");
+            LoggerService.shared.sendLogToLogger(" -nu mai replica si la nodul originar.");
         }
     }
 
     private void handleDefaultCase(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws ClassNotFoundException, IOException, InterruptedException {
         if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
-            BrokerMessage raspuns = new BrokerMessage("Sunt eu. Mulțumesc pentru mesaj!", adresaPersonala);
+            BrokerMessage raspuns = new BrokerMessage("Sunt eu. Multumesc pentru mesaj!", adresaPersonala);
             oos.writeObject(raspuns);
 
         } else {
-            BrokerMessage raspuns = new BrokerMessage("Nu sunt eu. Însă am trimis mai departe", adresaPersonala);
+            BrokerMessage raspuns = new BrokerMessage("Nu sunt eu. Insa am trimis mai departe", adresaPersonala);
 
             LoggerService.shared.sendLogToLogger(adresaPersonala + "trimite mesajul mai departe");
             oos.writeObject(raspuns);
@@ -246,7 +248,7 @@ public final class BrokerService {
             raspuns = (BrokerMessage) ois.readObject();
 
             if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger("Mesajul de la vecin: " + raspuns.primesteMesaj());
+                LoggerService.shared.sendLogToLogger(" - a primit de la vecin, mesajul urmator: " + raspuns.primesteMesaj());
             }
 
             oos.close();
@@ -274,14 +276,14 @@ public final class BrokerService {
             raspuns = (BrokerMessage) ois.readObject();
 
             if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger("Mesajul de la vecin: " + raspuns.primesteMesaj());
+                LoggerService.shared.sendLogToLogger(" - a primit de la vecin, mesajul urmator: " + raspuns.primesteMesaj());
             }
 
             oos.close();
             ois.close();
             socketComuicare.close();
         } catch (IOException e) {
-            LoggerService.shared.sendLogToLogger("nu se poate replica articolul la vecin");
+            LoggerService.shared.sendLogToLogger(" -nu se poate replica articolul la vecin");
         }
     }
 
