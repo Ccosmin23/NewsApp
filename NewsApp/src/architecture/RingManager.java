@@ -1,8 +1,10 @@
 package architecture;
 
+import model.broker.RunningBroker;
 import service.BrokerService;
 import service.LoggerService;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -11,6 +13,7 @@ import java.util.TimerTask;
 public class RingManager {
     private final BrokerService brokerService;
     private final Timer heartbeatTimer;
+    public ArrayList<RunningBroker> listOfRunningRunningBrokers = new ArrayList<>();
 
     public RingManager(BrokerService brokerService) {
         this.brokerService = brokerService;
@@ -28,8 +31,16 @@ public class RingManager {
 
     private void sendHeartbeat() {
         try {
-            InetAddress nextNode = brokerService.getNodUrmator() != null ? brokerService.getNodUrmator() : brokerService.getAdreseNoduri().get(0);
+            InetAddress nextNode;
+
+            if (brokerService.getNodUrmator() != null) {
+                nextNode = brokerService.getNodUrmator();
+            } else {
+                nextNode = brokerService.getAdreseNoduri().get(0);
+            }
+
             brokerService.send(nextNode);
+
         } catch (ClassNotFoundException e) {
             // de aici o sa facem handling ptr detectarea esecurilor si reconfigurarea sistemului
             handleNodeFailure();
@@ -41,7 +52,7 @@ public class RingManager {
     }
 
     public void handleNodeFailure() {
-        LoggerService.shared.sendLogToLogger("Avem un esec pe nod. Incepem reconfigurarea sistemului...");
+        LoggerService.shared.sendLogToLogger("\nAvem un esec pe nod. Incepem reconfigurarea sistemului...");
 
         selectNewSuccessor();
         updateRingStructure();
@@ -66,14 +77,31 @@ public class RingManager {
 
     // aici demonstram ca s-a facut update-ul in arhitectura
     private void updateRingStructure() {
-        ArrayList<InetAddress> addressesList = brokerService.getAdreseNoduri();
 
         LoggerService.shared.sendLogToLogger("\n==========================================================\n" +
                 "Sistemul reconfigurat:\n");
 
-        for (InetAddress address: addressesList) {
-            LoggerService.shared.sendLogToLogger(address.getHostAddress());
+        for (RunningBroker runningBroker : listOfRunningRunningBrokers) {
+            boolean isReachable = isReachable(runningBroker.getAddress());
+            boolean hasARunningBroker = hasABrokerAssignedFor(runningBroker.getAddress());
+
+            if (isReachable && hasARunningBroker) {
+                String hostAddress = runningBroker.getAddress().getHostAddress();
+                LoggerService.shared.sendLogToLogger(hostAddress);
+            }
         }
+    }
+
+    private boolean isReachable(InetAddress address) {
+        try {
+            return address.isReachable(1000);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private boolean hasABrokerAssignedFor(InetAddress address) {
+        return true;
     }
 
     public void stopHeartbeat() {
