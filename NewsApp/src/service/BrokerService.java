@@ -239,7 +239,7 @@ public final class BrokerService {
                 } catch (EOFException e) {
                     LoggerService.shared.sendLogToLogger("Eroare EOFException in timpul heartbeat-ului "
                             + adresaPersonala
-                            + " Este posibil ca conexiunea sa fi fost inchisa.");
+                            + " Este posibil ca deja conexiunea sa fi fost inchisa.");
 
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
