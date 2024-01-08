@@ -1,11 +1,15 @@
 package architecture;
 
+import model.broker.BrokerMessage;
 import model.broker.RunningBroker;
 import service.BrokerService;
 import service.LoggerService;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,25 +44,59 @@ public class RingManager {
             }
 
             //doar pentru teste
-            if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.30.10")) {
-                brokerService.send(InetAddress.getByName("192.168.30.10"));
-            }
+//            if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.30.10")) {
+//                brokerService.send(InetAddress.getByName("192.168.30.10"));
+//                send(InetAddress.getByName("192.168.30.10"));
+//            }
 
-//            brokerService.send(nextNode);
+            send(nextNode);
 
         } catch (Exception e) {
-            LoggerService.shared.sendLogToLogger("Avem o eroare neasteptata in metoda heartbeat: " + e);
+            LoggerService.shared.sendLogToLogger2("Avem o eroare neasteptata in metoda heartbeat: " + e);
             e.printStackTrace();
         }
     }
 
+    public void send(InetAddress destinatie) {
+        try {
+            BrokerMessage raspuns;
+            ObjectOutputStream objectOutputStream;
+            ObjectInputStream objectInputStream;
+
+            BrokerMessage brokerMessage = new BrokerMessage(destinatie.getHostAddress(), destinatie);
+            brokerMessage.seteazaComanda("heartbeat");
+
+            Socket socketComuicare = new Socket(destinatie, 9700);
+            objectOutputStream = new ObjectOutputStream(socketComuicare.getOutputStream());
+            objectInputStream = new ObjectInputStream(socketComuicare.getInputStream());
+
+            objectOutputStream.writeObject(brokerMessage);
+            objectOutputStream.flush();
+
+            raspuns = (BrokerMessage) objectInputStream.readObject();
+//            LoggerService.shared.sendLogToLogger2(raspuns.primesteMesaj());
+
+            socketComuicare.close();
+            objectOutputStream.close();
+            objectInputStream.close();
+
+        } catch (IOException e) {
+            // aici avem eroare de Connection refused
+            //ToDo: - de reconfigurat sistemul
+            handleNodeFailure();
+
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void handleNodeFailure() {
-        LoggerService.shared.sendLogToLogger("\nAvem un esec pe nod. Incepem reconfigurarea sistemului...");
+        LoggerService.shared.sendLogToLogger2("\n\t\tAvem un esec pe nod. Incepem reconfigurarea sistemului...");
 
         selectNewSuccessor();
         updateRingStructure();
 
-        LoggerService.shared.sendLogToLogger("Reconfigurare efectuata cu success. Un nou successor a fost selectat.");
+        LoggerService.shared.sendLogToLogger2("Reconfigurare efectuata.");
     }
 
     // aici selectam noul nod successor dupa ce o am primit un fail
@@ -79,7 +117,7 @@ public class RingManager {
     // aici demonstram ca s-a facut update-ul in arhitectura
     private void updateRingStructure() {
 
-        LoggerService.shared.sendLogToLogger("\n==========================================================\n" +
+        LoggerService.shared.sendLogToLogger2("\n==========================================================\n" +
                 "Sistemul reconfigurat:\n");
 
         for (RunningBroker runningBroker : listOfRunningRunningBrokers) {
@@ -88,7 +126,7 @@ public class RingManager {
 
             if (isReachable && hasARunningBroker) {
                 String hostAddress = runningBroker.getAddress().getHostAddress();
-                LoggerService.shared.sendLogToLogger(hostAddress);
+                LoggerService.shared.sendLogToLogger2(hostAddress);
             }
         }
     }

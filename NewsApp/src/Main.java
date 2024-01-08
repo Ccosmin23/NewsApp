@@ -36,6 +36,9 @@ public class Main {
             case "logger":
                 startAsALogger();
                 break;
+            case "logger connection":
+                startAsALoggerConnection();
+                break;
             default: {
                 MainView.showMenuMessages();
                 break;
@@ -72,6 +75,16 @@ public class Main {
     public static void startAsALogger() {
         try {
             LoggerService.shared.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void startAsALoggerConnection() {
+        try {
+            LoggerService.shared.start2();
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
