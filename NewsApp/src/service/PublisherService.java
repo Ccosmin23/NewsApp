@@ -42,7 +42,7 @@ public final class PublisherService {
                     createArticle();
                     break;
                 case "g":
-                    publisherView.genereazaArticole();
+                    generateArticles();
                     break;
                 case "x":
                     closeProgram();
@@ -97,6 +97,34 @@ public final class PublisherService {
                 LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a incercat sa creeze stirea" + stireaCreata.getId());
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void generateArticles () {
+        int numberOfArticles = publisherView.getDesiredNumberOfArticles();
+        if (numberOfArticles == 0) {
+            return;
+        }
+
+        NewsStory[] articles = new NewsStory[numberOfArticles];
+        String brokerIPAddress = "192.168.30.10";
+        String content;
+        String title;
+        int i = 0;
+
+        try {
+            while (i < numberOfArticles) {
+                title = StringUtils.randomString(3, 32);
+                content = StringUtils.randomString(1, 80);
+
+                articles[i] = new NewsStory(null, title, content);
+
+                trimiteStirea(InetAddress.getByName(brokerIPAddress), articles[i]);
+                
+                i += 1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

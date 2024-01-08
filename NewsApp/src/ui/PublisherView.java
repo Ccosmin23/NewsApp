@@ -68,8 +68,30 @@ public class PublisherView {
         }
     }
 
-    public void genereazaArticole () {
+    public int getDesiredNumberOfArticles () {
+        int numberOfArticles = 0;
+        String input;
 
+        System.out.println("Introduceti un numar de articole ce vor fi generate si trimise");
+        input = scannerTastatura.nextLine();
+        if (input.matches("^[1-9][0-9]*") == false) {
+            System.out.println("Nu a-ti introdus un numar intreg pozitiv nenul!");
+            return 0;
+        }
+
+        try {
+            numberOfArticles = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            System.out.println("EROARE: Nu a-ti introdus un numar intreg pozitiv");
+            return 0;
+        }
+
+        if (numberOfArticles >= 1000) {
+            System.out.println("Numarul de articole propus trebuie sa fie mai mic de 1000!");
+            return 0;
+        }
+
+        return numberOfArticles;
     }
 
     public void inchideInterfata () {
