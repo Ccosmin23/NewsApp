@@ -39,11 +39,12 @@ public class RingManager {
                 nextNode = brokerService.getAdreseNoduri().get(0);
             }
 
-            brokerService.send(nextNode);
+            //doar pentru teste
+            if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.30.10")) {
+                brokerService.send(InetAddress.getByName("192.168.30.10"));
+            }
 
-        } catch (ClassNotFoundException e) {
-            // de aici o sa facem handling ptr detectarea esecurilor si reconfigurarea sistemului
-            handleNodeFailure();
+//            brokerService.send(nextNode);
 
         } catch (Exception e) {
             LoggerService.shared.sendLogToLogger("Avem o eroare neasteptata in metoda heartbeat: " + e);

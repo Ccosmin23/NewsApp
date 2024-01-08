@@ -1,11 +1,6 @@
 package service;
 
-import java.io.Console;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -112,7 +107,7 @@ public final class BrokerService {
                     receiverSocket = new ServerSocket(9700);
                     LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " a fost pornit");
 
-                    while (programIsRunning.get() == true) {
+                    while (programIsRunning.get()) {
                         try {
                             clientSocket = receiverSocket.accept();
 //                            LoggerService.shared.sendLogToLogger("Mesajul de la " + clientSocket.getInetAddress().toString() + " este receptionat!");
@@ -130,14 +125,18 @@ public final class BrokerService {
                             }
 
                             try {
-                                process(mesajReceptionat, oos, ois, clientSocket);
+                                if (mesajReceptionat.primesteMesaj() == "Heartbeat") {
+                                    LoggerService.shared.sendLogToLogger("- - - Heartbeat successful");
+                                } else {
+                                    process(mesajReceptionat, oos, ois, clientSocket);
+                                }
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
+                            } finally {
+                                ois.close();
+                                oos.close();
+                                clientSocket.close();
                             }
-
-                            ois.close();
-                            oos.close();
-                            clientSocket.close();
 
                         } catch (SocketException e) {
                             System.out.println(e.getMessage());
@@ -168,7 +167,6 @@ public final class BrokerService {
                 break;
             default:
                 break;
-//                handleDefaultCase(mesajReceptionat, oos);
         }
     }
 
@@ -190,7 +188,6 @@ public final class BrokerService {
 
     private void provideNews(ObjectOutputStream oos) throws IOException {
         BrokerMessage raspuns = new BrokerMessage("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
-
         raspuns.seteazaListaStiri(listaStiri);
 
         LoggerService.shared.sendLogToLogger("\nAm primit mesaj de la subscriber");
@@ -215,57 +212,64 @@ public final class BrokerService {
         }
     }
 
-    private void handleDefaultCase(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws ClassNotFoundException, IOException, InterruptedException {
-        if (mesajReceptionat.primesteAdresa().equals(adresaPersonala)) {
-            BrokerMessage raspuns = new BrokerMessage("Sunt eu. Multumesc pentru mesaj!", adresaPersonala);
-            oos.writeObject(raspuns);
-
-        } else {
-            BrokerMessage raspuns = new BrokerMessage("Nu sunt eu. Insa am trimis mai departe", adresaPersonala);
-
-            LoggerService.shared.sendLogToLogger(adresaPersonala + "trimite mesajul mai departe");
-            oos.writeObject(raspuns);
-            Thread.sleep(500);
-            send(mesajReceptionat.primesteAdresa());
-        }
-    }
-
     // ========================================== send() ==========================================
-    public void send (InetAddress destinatie) throws ClassNotFoundException {
+    public void send(InetAddress destination) {
         try {
-            ObjectOutputStream oos;
-            ObjectInputStream ois;
-            BrokerMessage msg = new BrokerMessage("Hello", destinatie);
-            BrokerMessage raspuns;
-            Socket socketComuicare = new Socket(nodUrmator, 9700);
+            BrokerMessage msg = new BrokerMessage("heartbeat", destination);
+            Socket socketCommunication = new Socket(destination, 9700);
 
-            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
-            ois = new ObjectInputStream(socketComuicare.getInputStream());
+            try (ObjectOutputStream oos = new ObjectOutputStream(socketCommunication.getOutputStream());
+                 ObjectInputStream ois = new ObjectInputStream(socketCommunication.getInputStream())
+            ) {
 
-            oos.writeObject(msg);
-            oos.flush();
+                // setam un timeout de 5 secunde)
+                socketCommunication.setSoTimeout(5000);
 
-            raspuns = (BrokerMessage) ois.readObject();
+                oos.writeObject(msg);
+                oos.flush();
 
-            if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger(" - a primit de la vecin, mesajul urmator: " + raspuns.primesteMesaj());
+                try {
+                    BrokerMessage response = (BrokerMessage) ois.readObject();
+
+                    if (response != null) {
+                        LoggerService.shared.sendLogToLogger("Am primit mesaj de la vecin: " + response.primesteMesaj());
+                    } else {
+                        LoggerService.shared.sendLogToLogger("Am primit un mesaj null de la vecin");
+                    }
+                } catch (EOFException e) {
+                    LoggerService.shared.sendLogToLogger("Eroare EOFException in timpul heartbeat-ului "
+                            + adresaPersonala
+                            + " Este posibil ca conexiunea sa fi fost inchisa.");
+
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+
+            } catch (IOException e) {
+                LoggerService.shared.sendLogToLogger("Eroare in timpul heartbeat-ului: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                try {
+                    socketCommunication.close();
+                } catch (IOException e) {
+                    LoggerService.shared.sendLogToLogger("Eroare la inchiderea socket-ului: " + e.getMessage());
+                }
             }
 
-            oos.close();
-            ois.close();
-            socketComuicare.close();
-
         } catch (IOException e) {
-//            LoggerService.shared.sendLogToLogger("Sunt " + boldedHostAddress + " si nu am primit inca niciun mesaj de la: " + nodUrmator);
+            LoggerService.shared.sendLogToLogger("Eroare de stabilire a conexiunii: " + e.getMessage());
         }
     }
 
-    public void replicaArticolLaVecin (BrokerMessage pachetReplica) throws ClassNotFoundException {
+    public void replicaArticolLaVecin(BrokerMessage pachetReplica) {
+        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
+        Socket socketComuicare = null;
+
         try {
-            ObjectOutputStream oos;
-            ObjectInputStream ois;
             BrokerMessage raspuns;
-            Socket socketComuicare = new Socket(nodUrmator, 9700);
+            socketComuicare = new Socket(nodUrmator, 9700);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
             ois = new ObjectInputStream(socketComuicare.getInputStream());
@@ -276,29 +280,33 @@ public final class BrokerService {
             raspuns = (BrokerMessage) ois.readObject();
 
             if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + nodUrmator + ") measajul: " + raspuns.primesteMesaj());
+                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + nodUrmator + ") mesajul: " + raspuns.primesteMesaj());
             }
 
-            oos.close();
-            ois.close();
-            socketComuicare.close();
         } catch (IOException e) {
-            LoggerService.shared.sendLogToLogger(" - raspuns: nu se poate replica articolul la vecin");
+            LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat (ClassNotFoundException): " + e.getMessage());
+        } finally {
+            try {
+                oos.close();
+                ois.close();
+                socketComuicare.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
+
 
     private void userInputHandler() throws UnknownHostException {
         while (this.programIsRunning.get()) {
             Console consola = System.console();
             switch (consola.readLine("-> ")) {
-                case "s": {
-                    try {
-                        send(InetAddress.getByName("192.168.30.10"));
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                case "s":
+                    send(InetAddress.getByName("192.168.30.10"));
                     break;
-                }
+
 
                 case "x": {
                     stopHeartbeat();
