@@ -40,9 +40,15 @@ public class RingManager {
             }
 
             //doar pentru teste
+<<<<<<< HEAD
             // if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.37.12")) {
             //     brokerService.send(InetAddress.getByName("192.168.37.12"));
             // }
+=======
+//            if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.30.10")) {
+//                brokerService.send(InetAddress.getByName("192.168.30.10"));
+//            }
+>>>>>>> origin/generare_stiri
 
 //            brokerService.send(nextNode);
 
