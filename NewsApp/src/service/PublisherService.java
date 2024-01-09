@@ -86,7 +86,7 @@ public final class PublisherService {
 
     private void createArticle() throws UnknownHostException {
         NewsStory stireaCreata = publisherView.creeazaArticol();
-        String brokerIPAddress = "192.168.30.10";
+        String brokerIPAddress = "192.168.37.12";
 
         if (stireaCreata != null) {
             try {
@@ -107,7 +107,7 @@ public final class PublisherService {
         }
 
         NewsStory[] articles = new NewsStory[numberOfArticles];
-        String brokerIPAddress = "192.168.30.10";
+        String brokerIPAddress = "192.168.37.12";
         String content;
         String title;
         int i = 0;

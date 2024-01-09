@@ -12,20 +12,27 @@ import model.broker.BrokerMessage;
 import model.news.NewsField;
 import model.news.NewsStory;
 import ui.SubscriberView;
+import utils.StringUtils;
 
 public final class SubscriberService {
     public static SubscriberService shared = new SubscriberService();
     private NewsField listaArticole;
 
     public void start () throws UnknownHostException {
-        SubscriberView uiAbonat = new SubscriberView();
+        // SubscriberView uiAbonat = new SubscriberView();
 
         // uiAbonat.afiseazaInterfata();
         // uiAbonat.inchideInterfata();
+        // String[] nodes = new String[]{"4", "7", "9", "10", "12"};
+        String selectedAddress = "192.168.37.69";
+        // Random rng = new Random();
+
+        // selectedAddress = "192.168.30." + nodes[rng.nextInt(0, nodes.length)];
 
         try {
-            primesteArticole(InetAddress.getByName("192.168.30.10"));
+            primesteArticole(InetAddress.getByName(selectedAddress));
             listeazaStiri();
+            // System.out.println("Selected broker: " + StringUtils.applyBoldTo(selectedAddress, null));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

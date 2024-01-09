@@ -15,7 +15,7 @@ public final class LoggerService {
 
     ServerSocket serverSocket;
     Socket clientSocket;
-    String loggerIpAddress = "192.168.30.13";
+    String loggerIpAddress = "192.168.37.222";
     int loggerPort = 9700;
     Boolean programIsRunning = false;
 

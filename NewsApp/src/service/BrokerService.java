@@ -304,7 +304,7 @@ public final class BrokerService {
             Console consola = System.console();
             switch (consola.readLine("-> ")) {
                 case "s":
-                    send(InetAddress.getByName("192.168.30.10"));
+                    send(InetAddress.getByName("192.168.37.12"));
                     break;
 
 
@@ -338,11 +338,11 @@ public final class BrokerService {
         ArrayList<InetAddress> inetAddressList = new ArrayList<>();
 
         try {
-            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
+            inetAddressList.add(InetAddress.getByName("192.168.37.69"));
+            inetAddressList.add(InetAddress.getByName("192.168.37.12"));
+            // inetAddressList.add(InetAddress.getByName("192.168.37.222"));
+            inetAddressList.add(InetAddress.getByName("192.168.37.86"));
+            inetAddressList.add(InetAddress.getByName("192.168.37.98"));
 
         } catch (UnknownHostException e) {
             LoggerService.shared.sendLogToLogger(e.getMessage());
