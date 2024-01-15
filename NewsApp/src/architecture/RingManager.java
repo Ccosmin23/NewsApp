@@ -9,14 +9,10 @@ import utils.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.net.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class RingManager {
     public static RingManager shared = new RingManager();
@@ -32,6 +28,10 @@ public final class RingManager {
     public RingManager(BrokerService brokerService) {
         this.brokerService = brokerService;
         this.heartbeatTimer = new Timer();
+    }
+
+    public void start() {
+        userInputHandler();
     }
 
     public void startHeartbeat() {
@@ -186,5 +186,77 @@ public final class RingManager {
 
     public String boldedHostAddress() {
         return StringUtils.applyBoldTo(hostAddress(), false);
+    }
+
+    // ====================================== instantiere dinamica a brokerilor =======================================================
+
+    public void userInputHandler() {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        boolean continueInput = true;
+
+        while (continueInput) {
+            System.out.println("\nDoriti sa adaugati o noua adresa IP in sistem?" +
+                    "\n - daca da, atunci noi vom crea un nou broker cu aceasta adresa" +
+                    "\n - daca nu, vom merge mai departe" +
+                    "\n\n(raspundeti cu 'da' sau 'nu')");
+            input = scanner.nextLine();
+
+            if ("da".equalsIgnoreCase(input)) {
+                System.out.println("\nIntroduceti adresa IP address a noului broker:");
+                input = scanner.nextLine();
+
+                // Validate and add the IP address
+                if (isValidIpAddress(input)) {
+                    RunningBroker newBroker = null;
+
+                    try {
+                        newBroker = new RunningBroker(InetAddress.getByName(input), true);
+
+                    } catch (UnknownHostException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    listOfRunningRunningBrokers.add(newBroker);
+                    System.out.println("Am adaugat cu succes noul broker cu adresa IP: " + input);
+
+                } else {
+                    System.out.println("====================================================================" +
+                            "\n!!! Ati introdus o adresa IP gresita. Va rugam introduceti dinou." +
+                            "\n====================================================================\n");
+                }
+            } else if ("nu".equalsIgnoreCase(input)) {
+                continueInput = false;
+                System.out.println("ati ales nu, prin urmare vom inchide executia");
+                System.exit(0);
+
+            } else {
+                System.out.println("Ati tastat gresit, va rugam introduceti unul din raspunsurile: 'da' sau 'nu'.");
+            }
+        }
+
+        scanner.close();
+    }
+
+    private boolean isValidIpAddress(String ipAddress) {
+        // Regex for digit from 0 to 255.
+        String zeroTo255 = "(\\d{1,2}|(0|1)\\d{2}|2[0-4]\\d|25[0-5])";
+        // Regex for a digit from 0 to 255 and followed by a dot, repeated 4 times.
+        // This is the regex to validate an IP address.
+        String regex = zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255;
+
+        // Compile the ReGex
+        Pattern p = Pattern.compile(regex);
+
+        // If the IP address is empty return false
+        if (ipAddress == null) {
+            return false;
+        }
+
+        // Pattern class contains matcher() method to find matching between given IP address and regular expression.
+        Matcher m = p.matcher(ipAddress);
+
+        // Return if the IP address matched the ReGex
+        return m.matches();
     }
 }

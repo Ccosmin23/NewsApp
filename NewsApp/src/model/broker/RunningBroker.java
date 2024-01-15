@@ -5,9 +5,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RunningBroker {
     private InetAddress address = null;
-    private AtomicBoolean hasAContainerRunningWithThisBroker;
+    private Boolean hasAContainerRunningWithThisBroker;
 
-    public RunningBroker(InetAddress address, AtomicBoolean hasAContainerRunningWithThisBroker) {
+    public RunningBroker(InetAddress address, Boolean hasAContainerRunningWithThisBroker) {
         this.address = address;
         this.hasAContainerRunningWithThisBroker = hasAContainerRunningWithThisBroker;
     }
@@ -20,11 +20,11 @@ public class RunningBroker {
         this.address = address;
     }
 
-    public AtomicBoolean getHasAContainerRunningWithThisBroker() {
+    public Boolean getHasAContainerRunningWithThisBroker() {
         return hasAContainerRunningWithThisBroker;
     }
 
-    public void setHasAContainerRunningWithThisBroker(AtomicBoolean hasAContainerRunningWithThisBroker) {
+    public void setHasAContainerRunningWithThisBroker(Boolean hasAContainerRunningWithThisBroker) {
         this.hasAContainerRunningWithThisBroker = hasAContainerRunningWithThisBroker;
     }
 }

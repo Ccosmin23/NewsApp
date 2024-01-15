@@ -4,6 +4,7 @@ import java.net.*;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
+import architecture.RingManager;
 import service.BrokerService;
 import service.LoggerService;
 import service.PublisherService;
@@ -36,8 +37,11 @@ public class Main {
             case "logger":
                 startAsALogger();
                 break;
-            case "logger connection":
+            case "logger_connection":
                 startAsALoggerConnection();
+                break;
+            case "ring_manager":
+                startAsARingManager();
                 break;
             default: {
                 MainView.showMenuMessages();
@@ -90,5 +94,9 @@ public class Main {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void startAsARingManager() {
+        RingManager.shared.start();
     }
 }

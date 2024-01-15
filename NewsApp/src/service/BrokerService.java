@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import architecture.RingManager;
 import model.broker.BrokerMessage;
+import model.broker.RunningBroker;
 import model.news.NewsField;
 import utils.InetAddressUtils;
 import utils.StringUtils;
@@ -38,8 +39,9 @@ public final class BrokerService {
     }
 
     public BrokerService() {
-        this.listaStiri = new NewsField(1, "Stiri");
-        this.ringManager = new RingManager(this);
+//        this.adreseNoduri = getInetAddresses();
+//        this.listaStiri = new NewsField(1, "Stiri");
+//        this.ringManager = new RingManager(this);
     }
 
     // ========================================== start() ==========================================
@@ -294,9 +296,9 @@ public final class BrokerService {
     }
 
     // ========================================== IP addresses ==========================================
-//    private ArrayList<InetAddress> getInetAddresses() {
-//        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
-//
+    private ArrayList<InetAddress> getInetAddresses() {
+        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
+
 //        try {
 //            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
 //            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
@@ -307,9 +309,13 @@ public final class BrokerService {
 //        } catch (UnknownHostException e) {
 //            LoggerService.shared.sendLogToLogger(e.getMessage());
 //        }
-//
-//        return inetAddressList;
-//    }
+
+        for(RunningBroker runningBroker: RingManager.shared.listOfRunningRunningBrokers) {
+            inetAddressList.add(runningBroker.getAddress());
+        }
+
+        return inetAddressList;
+    }
 
     public ArrayList<InetAddress> getAdreseNoduri() {
         return adreseNoduri;
