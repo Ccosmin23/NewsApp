@@ -26,7 +26,6 @@ public final class RingManager {
     //poate ca sunt inutile
     private BrokerService brokerService = null;
 
-
     public RingManager() {
         this.heartbeatTimer = new Timer();
     }
@@ -44,18 +43,20 @@ public final class RingManager {
             ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
 
             //primeste si afiseaza mesajul
-            String message = (String) ois.readObject();
+            BrokerService brokerService = (BrokerService) ois.readObject();
 
-            if (message != null && message != "") {
-                System.out.println(message);
+            if (brokerService != null) {
+                listOfBrokers.add(brokerService);
+                System.out.println("am primit un nou broker");
             }
         }
     }
 
-    public void sendMessageToRingManager(String logMessage) {
+    public void appendToRingManagerThis(BrokerService brokerService) {
         try (Socket socket = new Socket(ringManagerIpAddress, SystemSetup.port);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
-            oos.writeObject(logMessage);
+            oos.writeObject(brokerService);
+
         } catch (IOException e) {
             //daca nu ramane commentat codul de mai jos o sa avem print-uri cand logger-ul nu e rulat
 //            System.out.println("Nu putem loga mesajul datorita: " + e.getMessage());

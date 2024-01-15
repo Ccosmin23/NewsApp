@@ -15,13 +15,14 @@ import architecture.RingManager;
 import model.broker.BrokerMessage;
 import model.broker.RunningBroker;
 import model.news.NewsField;
+import model.news.NewsStory;
 import utils.InetAddressUtils;
 import utils.StringUtils;
 import utils.SystemSetup;
 
 import static utils.SystemSetup.port;
 
-public final class BrokerService {
+public final class BrokerService implements Serializable {
     public static BrokerService shared = new BrokerService();
 
     InetAddress adresaPersonala = InetAddressUtils.hostAddress();
@@ -34,7 +35,7 @@ public final class BrokerService {
 
     public BrokerService() {
         this.listaStiri = new NewsField(1, "Stiri");
-        RingManager.shared.listOfBrokers.add(this);
+        RingManager.shared.appendToRingManagerThis(this);
 
 //        this.adresaPersonala = RingManager.shared.hostAddress();
 //         this.boldedHostAddress = RingManager.shared.boldedHostAddress();
@@ -51,6 +52,7 @@ public final class BrokerService {
 //
 //        return addresses;
 //    }
+
 
 
     // ========================================== start() ==========================================
