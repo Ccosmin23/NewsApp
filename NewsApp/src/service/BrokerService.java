@@ -110,7 +110,6 @@ public final class BrokerService {
                     while (programIsRunning.get()) {
                         try {
                             clientSocket = receiverSocket.accept();
-//                            LoggerService.shared.sendLogToLogger("Mesajul de la " + clientSocket.getInetAddress().toString() + " este receptionat!");
 
                             clientIStream = new DataInputStream(clientSocket.getInputStream());
                             clientOStream = new DataOutputStream(clientSocket.getOutputStream());
@@ -120,16 +119,8 @@ public final class BrokerService {
 
                             mesajReceptionat = (BrokerMessage) ois.readObject();
 
-                            if (mesajReceptionat != null) {
-                                LoggerService.shared.sendLogToLogger(mesajReceptionat.primesteComanda());
-                            }
-
                             try {
-                                if (mesajReceptionat.primesteMesaj() == "Heartbeat") {
-                                    LoggerService.shared.sendLogToLogger("- - - Heartbeat successful");
-                                } else {
-                                    process(mesajReceptionat, oos, ois, clientSocket);
-                                }
+                                process(mesajReceptionat, oos, ois, clientSocket);
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             } finally {
@@ -165,9 +156,27 @@ public final class BrokerService {
             case "replicare":
                 replicate(mesajReceptionat, oos, clientSocket);
                 break;
+            case "heartbeat":
+                heartbeat(mesajReceptionat, oos);
             default:
                 break;
         }
+    }
+
+    private void heartbeat(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws IOException {
+        BrokerMessage raspuns = new BrokerMessage("heartbeat receptionat", adresaPersonala);;
+        Boolean writeCompleted = false;
+
+        oos.writeObject(raspuns);
+        writeCompleted = true;
+        String status = writeCompleted ? "DA" : "NU";
+        String boldedIP = StringUtils.applyBoldTo(mesajReceptionat.primesteMesaj(), false);
+
+        LoggerService.shared.sendLogToLogger2("Avem conexiune intre "
+                + boldedHostAddress
+                + " si "
+                + boldedIP
+                + "\n - raspuns: " + status + "\n");
     }
 
     private void publish(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws ClassNotFoundException, IOException {
@@ -213,55 +222,6 @@ public final class BrokerService {
     }
 
     // ========================================== send() ==========================================
-    public void send(InetAddress destination) {
-        try {
-            BrokerMessage msg = new BrokerMessage("heartbeat", destination);
-            Socket socketCommunication = new Socket(destination, 9700);
-
-            try (ObjectOutputStream oos = new ObjectOutputStream(socketCommunication.getOutputStream());
-                 ObjectInputStream ois = new ObjectInputStream(socketCommunication.getInputStream())
-            ) {
-
-                // setam un timeout de 5 secunde)
-                socketCommunication.setSoTimeout(5000);
-
-                oos.writeObject(msg);
-                oos.flush();
-
-                try {
-                    BrokerMessage response = (BrokerMessage) ois.readObject();
-
-                    if (response != null) {
-                        LoggerService.shared.sendLogToLogger("Am primit mesaj de la vecin: " + response.primesteMesaj());
-                    } else {
-                        LoggerService.shared.sendLogToLogger("Am primit un mesaj null de la vecin");
-                    }
-                } catch (EOFException e) {
-                    LoggerService.shared.sendLogToLogger("Eroare EOFException in timpul heartbeat-ului "
-                            + adresaPersonala
-                            + " Este posibil ca conexiunea sa fi fost inchisa.");
-
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-
-            } catch (IOException e) {
-                LoggerService.shared.sendLogToLogger("Eroare in timpul heartbeat-ului: " + e.getMessage());
-                e.printStackTrace();
-            } finally {
-                try {
-                    socketCommunication.close();
-                } catch (IOException e) {
-                    LoggerService.shared.sendLogToLogger("Eroare la inchiderea socket-ului: " + e.getMessage());
-                }
-            }
-
-        } catch (IOException e) {
-            LoggerService.shared.sendLogToLogger("Eroare de stabilire a conexiunii: " + e.getMessage());
-        }
-    }
-
     public void replicaArticolLaVecin(BrokerMessage pachetReplica) {
         ObjectOutputStream oos = null;
         ObjectInputStream ois = null;
@@ -289,8 +249,8 @@ public final class BrokerService {
             LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat (ClassNotFoundException): " + e.getMessage());
         } finally {
             try {
-                oos.close();
                 ois.close();
+                oos.close();
                 socketComuicare.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -304,7 +264,7 @@ public final class BrokerService {
             Console consola = System.console();
             switch (consola.readLine("-> ")) {
                 case "s":
-                    send(InetAddress.getByName("192.168.30.10"));
+//                    send(InetAddress.getByName("192.168.30.10"));
                     break;
 
 
