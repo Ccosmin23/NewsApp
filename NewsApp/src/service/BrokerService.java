@@ -38,7 +38,6 @@ public final class BrokerService {
     }
 
     public BrokerService() {
-        this.adreseNoduri = getInetAddresses();
         this.listaStiri = new NewsField(1, "Stiri");
         this.ringManager = new RingManager(this);
     }
@@ -75,6 +74,7 @@ public final class BrokerService {
 
             while (inetAddresses.hasMoreElements()) {
                 InetAddress inetAddress = inetAddresses.nextElement();
+
                 if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
                     adresaGazda = inetAddress;
                     break;
@@ -294,22 +294,22 @@ public final class BrokerService {
     }
 
     // ========================================== IP addresses ==========================================
-    private ArrayList<InetAddress> getInetAddresses() {
-        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
-
-        try {
-            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
-            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
-
-        } catch (UnknownHostException e) {
-            LoggerService.shared.sendLogToLogger(e.getMessage());
-        }
-
-        return inetAddressList;
-    }
+//    private ArrayList<InetAddress> getInetAddresses() {
+//        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
+//
+//        try {
+//            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
+//            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
+//            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
+//            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
+//            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
+//
+//        } catch (UnknownHostException e) {
+//            LoggerService.shared.sendLogToLogger(e.getMessage());
+//        }
+//
+//        return inetAddressList;
+//    }
 
     public ArrayList<InetAddress> getAdreseNoduri() {
         return adreseNoduri;

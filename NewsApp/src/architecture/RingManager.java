@@ -4,20 +4,30 @@ import model.broker.BrokerMessage;
 import model.broker.RunningBroker;
 import service.BrokerService;
 import service.LoggerService;
+import utils.StringUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class RingManager {
+public final class RingManager {
+    public static RingManager shared = new RingManager();
     private final BrokerService brokerService;
     private final Timer heartbeatTimer;
     public ArrayList<RunningBroker> listOfRunningRunningBrokers = new ArrayList<>();
+
+    public RingManager() {
+        this.brokerService = new BrokerService();
+        this.heartbeatTimer = new Timer();
+    }
 
     public RingManager(BrokerService brokerService) {
         this.brokerService = brokerService;
@@ -146,5 +156,35 @@ public class RingManager {
     public void stopHeartbeat() {
         heartbeatTimer.cancel();
         heartbeatTimer.purge();
+    }
+
+    public String hostAddress() {
+        String hostAddress = "";
+
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress inetAddress = inetAddresses.nextElement();
+
+                    if (!inetAddress.isLoopbackAddress() && inetAddress.isSiteLocalAddress()) {
+                        hostAddress = inetAddress.getHostAddress();
+                    }
+                }
+            }
+
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
+
+        return hostAddress;
+    }
+
+    public String boldedHostAddress() {
+        return StringUtils.applyBoldTo(hostAddress(), false);
     }
 }
