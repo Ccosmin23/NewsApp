@@ -4,6 +4,7 @@ import model.broker.BrokerMessage;
 import service.BrokerService;
 import service.LoggerService;
 import utils.InetAddressUtils;
+import utils.StringUtils;
 import utils.SystemSetup;
 
 import java.io.IOException;
@@ -14,8 +15,6 @@ import java.util.*;
 
 public final class RingManager {
     public static RingManager shared = new RingManager();
-
-    private String ringManagerIpAddress = "192.168.30.4";
 
     private Socket clientSocket;
     private ServerSocket serverSocket;
@@ -44,22 +43,25 @@ public final class RingManager {
 
             //primeste si afiseaza mesajul
             BrokerService brokerService = (BrokerService) ois.readObject();
+            String boldedIP = StringUtils.applyBoldTo(brokerService.getAdresaPersonala().getHostAddress(), false);
 
             if (brokerService != null) {
                 listOfBrokers.add(brokerService);
-                System.out.println("am primit un nou broker");
+                System.out.println("Am primit cu succes un nou broker cu adresa IP: " + boldedIP);
+            } else {
+                System.out.println("Am primit un broker NULL cu adresa IP: " + boldedIP + " si nu putem sa il adaugam");
             }
         }
     }
 
     public void appendToRingManagerThis(BrokerService brokerService) {
-        try (Socket socket = new Socket(ringManagerIpAddress, SystemSetup.port);
-             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
+        try {
+            Socket socket = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
             oos.writeObject(brokerService);
 
         } catch (IOException e) {
-            //daca nu ramane commentat codul de mai jos o sa avem print-uri cand logger-ul nu e rulat
-//            System.out.println("Nu putem loga mesajul datorita: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
