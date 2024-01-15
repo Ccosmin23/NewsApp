@@ -8,10 +8,12 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+import architecture.RingManager;
 import model.broker.BrokerMessage;
 import model.news.NewsField;
 import model.news.NewsStory;
 import ui.SubscriberView;
+import utils.SystemSetup;
 
 public final class SubscriberService {
     public static SubscriberService shared = new SubscriberService();
@@ -24,7 +26,7 @@ public final class SubscriberService {
         // uiAbonat.inchideInterfata();
 
         try {
-            primesteArticole(InetAddress.getByName("192.168.30.10"));
+            primesteArticole(InetAddress.getByName(RingManager.shared.starPointBroker().adresaPersonala.getHostAddress()));
             listeazaStiri();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -36,7 +38,7 @@ public final class SubscriberService {
             ObjectOutputStream oos;
             ObjectInputStream ois;
             BrokerMessage msg = new BrokerMessage("Hello broker", destinatie);
-            Socket socketComuicare = new Socket(destinatie, 9700);
+            Socket socketComuicare = new Socket(destinatie, SystemSetup.port);
             BrokerMessage raspuns;
 
             // Comanda "articole" îi va spune broker-ului să trimită

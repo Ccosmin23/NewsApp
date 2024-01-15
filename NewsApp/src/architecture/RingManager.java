@@ -1,37 +1,38 @@
 package architecture;
 
 import model.broker.BrokerMessage;
-import model.broker.RunningBroker;
 import service.BrokerService;
 import service.LoggerService;
 import utils.InetAddressUtils;
-import utils.StringUtils;
+import utils.SystemSetup;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class RingManager {
     public static RingManager shared = new RingManager();
-    private BrokerService brokerService = null;
+
+    private String ringManagerIpAddress = "192.168.30.4";
+
+    private Socket clientSocket;
+    private ServerSocket serverSocket;
+
     private final Timer heartbeatTimer;
     public ArrayList<BrokerService> listOfBrokers = new ArrayList<>();
 
-    private ServerSocket serverSocket;
-    private Socket clientSocket;
-    private String ringManagerIpAddress = "192.168.30.4";
-    private int loggerPort = 9700;
+    //poate ca sunt inutile
+    private BrokerService brokerService = null;
+
 
     public RingManager() {
         this.heartbeatTimer = new Timer();
     }
 
     public void start() throws IOException, ClassNotFoundException {
-        serverSocket = new ServerSocket(loggerPort);
+        serverSocket = new ServerSocket(SystemSetup.port);
 
         System.out.println("=======================================================================================");
         System.out.println("\tSalutare! Eu sunt ring manager-ul cu adresa IP " + InetAddressUtils.boldedHostAddress());
@@ -52,7 +53,7 @@ public final class RingManager {
     }
 
     public void sendMessageToRingManager(String logMessage) {
-        try (Socket socket = new Socket(ringManagerIpAddress, loggerPort);
+        try (Socket socket = new Socket(ringManagerIpAddress, SystemSetup.port);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
             oos.writeObject(logMessage);
         } catch (IOException e) {
@@ -63,6 +64,13 @@ public final class RingManager {
 
 
 
+    public BrokerService starPointBroker() {
+        if (listOfBrokers.contains(0)) {
+            return listOfBrokers.get(0);
+        } else {
+            return null;
+        }
+    }
 
 
     public void startHeartbeat() {
@@ -107,7 +115,7 @@ public final class RingManager {
             BrokerMessage brokerMessage = new BrokerMessage(destinatie.getHostAddress(), destinatie);
             brokerMessage.seteazaComanda("heartbeat");
 
-            Socket socketComuicare = new Socket(destinatie, 9700);
+            Socket socketComuicare = new Socket(destinatie, SystemSetup.port);
             objectOutputStream = new ObjectOutputStream(socketComuicare.getOutputStream());
             objectInputStream = new ObjectInputStream(socketComuicare.getInputStream());
 

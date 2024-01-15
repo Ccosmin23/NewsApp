@@ -7,11 +7,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import architecture.RingManager;
 import model.broker.BrokerMessage;
 import model.news.NewsStory;
 import ui.PublisherView;
 import utils.InetAddressUtils;
 import utils.StringUtils;
+import utils.SystemSetup;
 
 public final class PublisherService {
     public static PublisherService shared = new PublisherService();
@@ -19,22 +21,12 @@ public final class PublisherService {
     private PublisherView publisherView;
     boolean programIsRunning = true;
 
-    String hostAddress = ""; {
-        try {
-            hostAddress = InetAddressUtils.getLocalAddress().getHostAddress();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    String boldedHostAddress = StringUtils.applyBoldTo(hostAddress, false);
-
     public PublisherService() {
         publisherView = new PublisherView();
     }
 
     public void start() throws UnknownHostException, ClassNotFoundException {
-        LoggerService.shared.sendLogToLogger("A fost creat un publisher cu adresa IP " + boldedHostAddress);
+        LoggerService.shared.sendLogToLogger("A fost creat un publisher cu adresa IP " + InetAddressUtils.boldedHostAddress());
 
         while (programIsRunning) {
             switch (publisherView.afiseazaInterfata()) {
@@ -53,13 +45,13 @@ public final class PublisherService {
         }
     }
 
-    public void trimiteStirea (InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
+    public void trimiteStirea(InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
         try {
             ObjectOutputStream objectOutputStream;
             ObjectInputStream objectInputStream;
 
             BrokerMessage brokerMessage = new BrokerMessage("Hello broker de inel", destinatie);
-            Socket socketComuicare = new Socket(destinatie, 9700);
+            Socket socketComuicare = new Socket(RingManager.shared.starPointBroker().adresaPersonala, SystemSetup.port);
             BrokerMessage raspuns;
 
             brokerMessage.seteazaComanda("publica");
@@ -71,10 +63,10 @@ public final class PublisherService {
             objectOutputStream.writeObject(brokerMessage);
             objectOutputStream.flush();
 
-            LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a trimis o stire");
+            LoggerService.shared.sendLogToLogger("\nPublisher-ul " + InetAddressUtils.boldedHostAddress() + " a trimis o stire");
 
             raspuns = (BrokerMessage) objectInputStream.readObject();
-            LoggerService.shared.sendLogToLogger("\nRaspunsul server-ului pentru publisher-ul " + boldedHostAddress + ": " + raspuns.primesteMesaj());
+            LoggerService.shared.sendLogToLogger("\nRaspunsul server-ului pentru publisher-ul " + InetAddressUtils.boldedHostAddress() + ": " + raspuns.primesteMesaj());
 
             socketComuicare.close();
             objectOutputStream.close();
@@ -91,10 +83,10 @@ public final class PublisherService {
         if (stireaCreata != null) {
             try {
                 trimiteStirea(InetAddress.getByName(brokerIPAddress), stireaCreata);
-                LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a creat cu succes stirea cu ID-ul " + stireaCreata.getId());
+                LoggerService.shared.sendLogToLogger("\nPublisher-ul " + InetAddressUtils.boldedHostAddress() + " a creat cu succes stirea cu ID-ul " + stireaCreata.getId());
 
             } catch (ClassNotFoundException e) {
-                LoggerService.shared.sendLogToLogger("\nPublisher-ul " + boldedHostAddress + " a incercat sa creeze stirea" + stireaCreata.getId());
+                LoggerService.shared.sendLogToLogger("\nPublisher-ul " + InetAddressUtils.boldedHostAddress() + " a incercat sa creeze stirea" + stireaCreata.getId());
                 throw new RuntimeException(e);
             }
         }
@@ -131,6 +123,6 @@ public final class PublisherService {
     private void closeProgram() throws UnknownHostException {
         programIsRunning = false;
         publisherView.inchideInterfata();
-        LoggerService.shared.sendLogToLogger("Publisher-ul cu adresa IP " + boldedHostAddress + " a fost inchis");
+        LoggerService.shared.sendLogToLogger("Publisher-ul cu adresa IP " + InetAddressUtils.boldedHostAddress() + " a fost inchis");
     }
 }

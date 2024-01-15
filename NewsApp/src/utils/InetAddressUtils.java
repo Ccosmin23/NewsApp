@@ -7,9 +7,9 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 public class InetAddressUtils {
-    public static InetAddress getLocalAddress() throws UnknownHostException {
-        return InetAddress.getLocalHost();
-    }
+//    public static InetAddress getLocalAddress() throws UnknownHostException {
+//        return InetAddress.getLocalHost();
+//    }
 
     public static String boldedHostAddress() {
         return StringUtils.applyBoldTo(hostAddress().getHostAddress(), false);

@@ -17,11 +17,14 @@ import model.broker.RunningBroker;
 import model.news.NewsField;
 import utils.InetAddressUtils;
 import utils.StringUtils;
+import utils.SystemSetup;
+
+import static utils.SystemSetup.port;
 
 public final class BrokerService {
     public static BrokerService shared = new BrokerService();
 
-    InetAddress adresaPersonala;
+    InetAddress adresaPersonala = InetAddressUtils.hostAddress();
     InetAddress nodUrmator;
 //    ArrayList<InetAddress> adreseNoduri;
 
@@ -112,7 +115,7 @@ public final class BrokerService {
                 BrokerMessage mesajReceptionat;
 
                 try {
-                    receiverSocket = new ServerSocket(9700);
+                    receiverSocket = new ServerSocket(port);
                     LoggerService.shared.sendLogToLogger("Broker-ul " + InetAddressUtils.boldedHostAddress() + " a fost pornit");
 
                     while (programIsRunning.get()) {
@@ -237,7 +240,7 @@ public final class BrokerService {
 
         try {
             BrokerMessage raspuns;
-            socketComuicare = new Socket(nodUrmator, 9700);
+            socketComuicare = new Socket(nodUrmator, SystemSetup.port);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
             ois = new ObjectInputStream(socketComuicare.getInputStream());
