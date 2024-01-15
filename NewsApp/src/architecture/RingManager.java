@@ -188,75 +188,118 @@ public final class RingManager {
         return StringUtils.applyBoldTo(hostAddress(), false);
     }
 
-    // ====================================== instantiere dinamica a brokerilor =======================================================
 
+    // ====================================== instantiere dinamica a brokerilor =======================================================
     public void userInputHandler() {
         Scanner scanner = new Scanner(System.in);
-        String input;
+        String userInput;
         boolean continueInput = true;
 
         while (continueInput) {
-            System.out.println("\nDoriti sa adaugati o noua adresa IP in sistem?" +
-                    "\n - daca da, atunci noi vom crea un nou broker cu aceasta adresa" +
-                    "\n - daca nu, vom merge mai departe" +
-                    "\n\n(raspundeti cu 'da' sau 'nu')");
-            input = scanner.nextLine();
+            startMessage();
+            userInput = scanner.nextLine();
 
-            if ("da".equalsIgnoreCase(input)) {
+            if ("da".equalsIgnoreCase(userInput)) {
                 System.out.println("\nIntroduceti adresa IP address a noului broker:");
-                input = scanner.nextLine();
+                userInput = scanner.nextLine();
 
-                // Validate and add the IP address
-                if (isValidIpAddress(input)) {
-                    RunningBroker newBroker = null;
+                // validam adresa IP si o adaugam in lista de brokeri
+                validate(userInput);
 
-                    try {
-                        newBroker = new RunningBroker(InetAddress.getByName(input), true);
-
-                    } catch (UnknownHostException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    listOfRunningRunningBrokers.add(newBroker);
-                    System.out.println("Am adaugat cu succes noul broker cu adresa IP: " + input);
-
-                } else {
-                    System.out.println("====================================================================" +
-                            "\n!!! Ati introdus o adresa IP gresita. Va rugam introduceti dinou." +
-                            "\n====================================================================\n");
-                }
-            } else if ("nu".equalsIgnoreCase(input)) {
-                continueInput = false;
-                System.out.println("ati ales nu, prin urmare vom inchide executia");
-                System.exit(0);
-
+            } else if ("nu".equalsIgnoreCase(userInput)) {
+              stopProgram();
             } else {
-                System.out.println("Ati tastat gresit, va rugam introduceti unul din raspunsurile: 'da' sau 'nu'.");
+                userEnteredATypo();
             }
         }
 
         scanner.close();
     }
 
+    private void validate(String userInput) {
+        if (isValidIpAddress(userInput)) {
+            if (!checkIfBrokerAlreadyExist(userInput)) {
+                createBrokerWith(userInput);
+            } else {
+                userAlreadyExistsMessage();
+            }
+
+        } else {
+            wrongIPAddress();
+        }
+    }
+
+    // verificam daca exista deja broker-ul in lista noastra
+    private boolean checkIfBrokerAlreadyExist(String ipAddress) {
+        for (RunningBroker broker : listOfRunningRunningBrokers) {
+            if (broker.getAddress().getHostAddress().equals(ipAddress)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void createBrokerWith(String ipAddress) {
+        RunningBroker newBroker = null;
+
+        try {
+            newBroker = new RunningBroker(InetAddress.getByName(ipAddress), true);
+
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        listOfRunningRunningBrokers.add(newBroker);
+        System.out.println("Am adaugat cu succes noul broker cu adresa IP: " + ipAddress);
+    }
+
+    private void wrongIPAddress() {
+        System.out.println("====================================================================" +
+                "\n!!! Ati introdus o adresa IP gresita. Va rugam introduceti dinou." +
+                "\n====================================================================\n");
+    }
+
+    private void userEnteredATypo() {
+        System.out.println("Ati tastat gresit, va rugam introduceti unul din raspunsurile: 'da' sau 'nu'.");
+    }
+
+    private void userAlreadyExistsMessage() {
+        System.out.println("Un broker cu aceeasi adresa IP exista deja. Adaugarea a fost omisa.");
+    }
+
     private boolean isValidIpAddress(String ipAddress) {
-        // Regex for digit from 0 to 255.
+        // Regex de la 0 pana la 255.
         String zeroTo255 = "(\\d{1,2}|(0|1)\\d{2}|2[0-4]\\d|25[0-5])";
-        // Regex for a digit from 0 to 255 and followed by a dot, repeated 4 times.
-        // This is the regex to validate an IP address.
+
+        // Regex pentru un digit de la 0 pana la  255 si urmat de caracterul punct '.', repetat de 4 ori
+        // dupa proprietatea regex o sa validam fiecare adresa IP
         String regex = zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255 + "\\." + zeroTo255;
 
-        // Compile the ReGex
+        // compilam regex-ul
         Pattern p = Pattern.compile(regex);
 
-        // If the IP address is empty return false
+        // daca IP-ul este empty atunci returnam fals
         if (ipAddress == null) {
             return false;
         }
 
-        // Pattern class contains matcher() method to find matching between given IP address and regular expression.
+        // acum cautam intre adresa IP si expresia regulata formata pe baza regex-ului
         Matcher m = p.matcher(ipAddress);
 
-        // Return if the IP address matched the ReGex
+        //si in final returnam daca ip-ul face matching cu regex-ul nostru
         return m.matches();
+    }
+
+    private void startMessage() {
+        System.out.println("\nDoriti sa adaugati o noua adresa IP in sistem?" +
+                "\n - daca da, atunci noi vom crea un nou broker cu aceasta adresa" +
+                "\n - daca nu, vom merge mai departe" +
+                "\n\n(raspundeti cu 'da' sau 'nu')");
+    }
+
+    private void stopProgram() {
+        System.out.println("ati ales nu, prin urmare vom inchide executia");
+        System.exit(0);
     }
 }
