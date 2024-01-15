@@ -6,9 +6,8 @@ import utils.StringUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
+import java.util.Enumeration;
 
 public final class LoggerService {
     public static LoggerService shared = new LoggerService();
@@ -18,14 +17,6 @@ public final class LoggerService {
     String loggerIpAddress = "192.168.30.13";
     int loggerPort = 9700;
     Boolean programIsRunning = false;
-
-    private String boldedHostAddress; {
-        try {
-            boldedHostAddress = StringUtils.applyBoldTo(InetAddressUtils.getLocalAddress().getHostAddress(), false);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void start() throws IOException, ClassNotFoundException {
         serverSocket = new ServerSocket(loggerPort);
@@ -56,6 +47,28 @@ public final class LoggerService {
         } catch (IOException e) {
             //daca nu ramane commentat codul de mai jos o sa avem print-uri cand logger-ul nu e rulat
 //            System.out.println("Nu putem loga mesajul datorita: " + e.getMessage());
+        }
+    }
+
+    private String boldedHostAddress; {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress inetAddress = inetAddresses.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress.isSiteLocalAddress()) {
+                        System.out.println("Local IP Address: " + inetAddress.getHostAddress());
+                        boldedHostAddress = StringUtils.applyBoldTo(inetAddress.getHostAddress(), false);
+                    }
+                }
+            }
+
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
         }
     }
 }
