@@ -4,6 +4,7 @@ import model.broker.BrokerMessage;
 import model.broker.RunningBroker;
 import service.BrokerService;
 import service.LoggerService;
+import utils.InetAddressUtils;
 import utils.StringUtils;
 
 import java.io.IOException;
@@ -16,23 +17,53 @@ import java.util.regex.Pattern;
 
 public final class RingManager {
     public static RingManager shared = new RingManager();
-    private final BrokerService brokerService;
+    private BrokerService brokerService = null;
     private final Timer heartbeatTimer;
-    public ArrayList<RunningBroker> listOfRunningRunningBrokers = new ArrayList<>();
+    public ArrayList<BrokerService> listOfBrokers = new ArrayList<>();
+
+    private ServerSocket serverSocket;
+    private Socket clientSocket;
+    private String ringManagerIpAddress = "192.168.30.4";
+    private int loggerPort = 9700;
 
     public RingManager() {
-        this.brokerService = new BrokerService();
         this.heartbeatTimer = new Timer();
     }
 
-    public RingManager(BrokerService brokerService) {
-        this.brokerService = brokerService;
-        this.heartbeatTimer = new Timer();
+    public void start() throws IOException, ClassNotFoundException {
+        serverSocket = new ServerSocket(loggerPort);
+
+        System.out.println("=======================================================================================");
+        System.out.println("\tSalutare! Eu sunt ring manager-ul cu adresa IP " + InetAddressUtils.boldedHostAddress());
+        System.out.println("\t\tpentru ca sa inchizi executia apasa CTRL+C apoi ENTER");
+        System.out.println("========================================================================================\n");
+
+        while (true) {
+            clientSocket = serverSocket.accept();
+            ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
+
+            //primeste si afiseaza mesajul
+            String message = (String) ois.readObject();
+
+            if (message != null && message != "") {
+                System.out.println(message);
+            }
+        }
     }
 
-    public void start() {
-
+    public void sendMessageToRingManager(String logMessage) {
+        try (Socket socket = new Socket(ringManagerIpAddress, loggerPort);
+             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
+            oos.writeObject(logMessage);
+        } catch (IOException e) {
+            //daca nu ramane commentat codul de mai jos o sa avem print-uri cand logger-ul nu e rulat
+//            System.out.println("Nu putem loga mesajul datorita: " + e.getMessage());
+        }
     }
+
+
+
+
 
     public void startHeartbeat() {
         heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
@@ -47,11 +78,11 @@ public final class RingManager {
         try {
             InetAddress nextNode;
 
-            if (brokerService.getNodUrmator() != null) {
-                nextNode = brokerService.getNodUrmator();
-            } else {
-                nextNode = brokerService.getAdreseNoduri().get(0);
-            }
+//            if (brokerService.getNodUrmator() != null) {
+//                nextNode = brokerService.getNodUrmator();
+//            } else {
+//                nextNode = brokerService.getAdreseNoduri().get(0);
+//            }
 
             //doar pentru teste
 //            if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.30.10")) {
@@ -59,7 +90,7 @@ public final class RingManager {
 //                send(InetAddress.getByName("192.168.30.10"));
 //            }
 
-            send(nextNode);
+//            send(nextNode);
 
         } catch (Exception e) {
             LoggerService.shared.sendLogToLogger2("Avem o eroare neasteptata in metoda heartbeat: " + e);
@@ -116,12 +147,12 @@ public final class RingManager {
     // vom folosi operatorul modulo %, pentru a obtine un inel circular
     // pe urma luam adresa noului succesor si o setam la nodul urmator din BrokerService
     private void selectNewSuccessor() {
-        int currentSuccessorIndex = brokerService.getAdreseNoduri().indexOf(brokerService.getNodUrmator());
-        int lengthOfAddressList = brokerService.getAdreseNoduri().size();
-        int newSuccessorIndex = (currentSuccessorIndex + 1) % lengthOfAddressList;
-
-        InetAddress newSuccessor = brokerService.getAdreseNoduri().get(newSuccessorIndex);
-        brokerService.setNodUrmator(newSuccessor);
+//        int currentSuccessorIndex = brokerService.getAdreseNoduri().indexOf(brokerService.getNodUrmator());
+//        int lengthOfAddressList = brokerService.getAdreseNoduri().size();
+//        int newSuccessorIndex = (currentSuccessorIndex + 1) % lengthOfAddressList;
+//
+//        InetAddress newSuccessor = brokerService.getAdreseNoduri().get(newSuccessorIndex);
+//        brokerService.setNodUrmator(newSuccessor);
     }
 
     // aici demonstram ca s-a facut update-ul in arhitectura
@@ -130,15 +161,15 @@ public final class RingManager {
         LoggerService.shared.sendLogToLogger2("\n==========================================================\n" +
                 "Sistemul reconfigurat:\n");
 
-        for (RunningBroker runningBroker : listOfRunningRunningBrokers) {
-            boolean isReachable = isReachable(runningBroker.getAddress());
-            boolean hasARunningBroker = hasABrokerAssignedFor(runningBroker.getAddress());
-
-            if (isReachable && hasARunningBroker) {
-                String hostAddress = runningBroker.getAddress().getHostAddress();
-                LoggerService.shared.sendLogToLogger2(hostAddress);
-            }
-        }
+//        for (RunningBroker runningBroker : listOfRunningRunningBrokers) {
+//            boolean isReachable = isReachable(runningBroker.getAddress());
+//            boolean hasARunningBroker = hasABrokerAssignedFor(runningBroker.getAddress());
+//
+//            if (isReachable && hasARunningBroker) {
+//                String hostAddress = runningBroker.getAddress().getHostAddress();
+//                LoggerService.shared.sendLogToLogger2(hostAddress);
+//            }
+//        }
     }
 
     private boolean isReachable(InetAddress address) {
@@ -154,37 +185,7 @@ public final class RingManager {
     }
 
     public void stopHeartbeat() {
-        heartbeatTimer.cancel();
-        heartbeatTimer.purge();
-    }
-
-    public String hostAddress() {
-        String hostAddress = "";
-
-        try {
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-
-            while (networkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = networkInterfaces.nextElement();
-                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-
-                while (inetAddresses.hasMoreElements()) {
-                    InetAddress inetAddress = inetAddresses.nextElement();
-
-                    if (!inetAddress.isLoopbackAddress() && inetAddress.isSiteLocalAddress()) {
-                        hostAddress = inetAddress.getHostAddress();
-                    }
-                }
-            }
-
-        } catch (SocketException e) {
-            throw new RuntimeException(e);
-        }
-
-        return hostAddress;
-    }
-
-    public String boldedHostAddress() {
-        return StringUtils.applyBoldTo(hostAddress(), false);
+//        heartbeatTimer.cancel();
+//        heartbeatTimer.purge();
     }
 }

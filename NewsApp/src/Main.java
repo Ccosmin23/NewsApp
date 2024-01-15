@@ -97,6 +97,12 @@ public class Main {
     }
 
     public static void startAsARingManager() {
-        RingManager.shared.start();
+        try {
+            RingManager.shared.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

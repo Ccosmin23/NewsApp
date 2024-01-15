@@ -23,31 +23,37 @@ public final class BrokerService {
 
     InetAddress adresaPersonala;
     InetAddress nodUrmator;
-    ArrayList<InetAddress> adreseNoduri;
+//    ArrayList<InetAddress> adreseNoduri;
 
     ServerSocket receiverSocket;
     AtomicBoolean programIsRunning;
     NewsField listaStiri;
 
-    private RingManager ringManager;
-    private String boldedHostAddress; {
-        try {
-            boldedHostAddress = StringUtils.applyBoldTo(InetAddressUtils.getLocalAddress().getHostAddress(), false);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+    public BrokerService() {
+        this.listaStiri = new NewsField(1, "Stiri");
+        RingManager.shared.listOfBrokers.add(this);
+
+//        this.adresaPersonala = RingManager.shared.hostAddress();
+//         this.boldedHostAddress = RingManager.shared.boldedHostAddress();
+//        this.ringManager = new RingManager(this);
+//        this.adreseNoduri = getRingManagerAddresses();
     }
 
-    public BrokerService() {
-//        this.adreseNoduri = getInetAddresses();
-//        this.listaStiri = new NewsField(1, "Stiri");
-//        this.ringManager = new RingManager(this);
-    }
+//    private ArrayList<InetAddress> getRingManagerAddresses() {
+//        ArrayList<InetAddress> addresses = new ArrayList<>();
+//
+//        for (RunningBroker broker : RingManager.shared.listOfBrokers) {
+//            addresses.add(broker.getAddress());
+//        }
+//
+//        return addresses;
+//    }
+
 
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
         findSuitableHostAddress();
-        ringManager.startHeartbeat();
+//        ringManager.startHeartbeat();
         receive().start();
         userInputHandler();
     }
@@ -55,9 +61,9 @@ public final class BrokerService {
     private void findSuitableHostAddress() throws SocketException, UnknownHostException {
         InetAddress adresaGazda = searchHostAddressIntoLocalMachine();
 
-        if (adreseNoduri.contains(adresaGazda)) {
-            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
-        }
+//        if (adreseNoduri.contains(adresaGazda)) {
+//            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
+//        }
 
         if (adresaGazda != null) {
             adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
@@ -77,10 +83,10 @@ public final class BrokerService {
             while (inetAddresses.hasMoreElements()) {
                 InetAddress inetAddress = inetAddresses.nextElement();
 
-                if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
-                    adresaGazda = inetAddress;
-                    break;
-                }
+//                if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
+//                    adresaGazda = inetAddress;
+//                    break;
+//                }
             }
 
             if (adresaGazda != null) {
@@ -107,7 +113,7 @@ public final class BrokerService {
 
                 try {
                     receiverSocket = new ServerSocket(9700);
-                    LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " a fost pornit");
+                    LoggerService.shared.sendLogToLogger("Broker-ul " + InetAddressUtils.boldedHostAddress() + " a fost pornit");
 
                     while (programIsRunning.get()) {
                         try {
@@ -138,7 +144,7 @@ public final class BrokerService {
                         }
                     }
 
-                    LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " a fost oprit");
+                    LoggerService.shared.sendLogToLogger("Broker-ul " + InetAddressUtils.boldedHostAddress() + " a fost oprit");
 
                 } catch (IOException e) {
                     LoggerService.shared.sendLogToLogger(e.getMessage());
@@ -175,7 +181,7 @@ public final class BrokerService {
         String boldedIP = StringUtils.applyBoldTo(mesajReceptionat.primesteMesaj(), false);
 
         LoggerService.shared.sendLogToLogger2("Avem conexiune intre "
-                + boldedHostAddress
+                + InetAddressUtils.boldedHostAddress()
                 + " si "
                 + boldedIP
                 + "\n - raspuns: " + status + "\n");
@@ -185,12 +191,12 @@ public final class BrokerService {
         BrokerMessage raspuns = new BrokerMessage("Publicare receptionata", adresaPersonala);
         BrokerMessage replica = new BrokerMessage("Replica mesaj, replicare articol!", adresaPersonala);
 
-        LoggerService.shared.sendLogToLogger("\nBroker-ul " + boldedHostAddress  + " a primit mesaj de la publisher");
+        LoggerService.shared.sendLogToLogger("\nBroker-ul " + InetAddressUtils.boldedHostAddress()  + " a primit mesaj de la publisher");
 
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
-        LoggerService.shared.sendLogToLogger("Broker-ul " + boldedHostAddress + " transmite articolul introdus in intreg sistemul");
+        LoggerService.shared.sendLogToLogger("Broker-ul " + InetAddressUtils.boldedHostAddress() + " transmite articolul introdus in intreg sistemul");
         replica.seteazaComanda("replicare");
         replica.seteazaStirea(mesajReceptionat.primesteStirea());
 
@@ -209,7 +215,7 @@ public final class BrokerService {
         BrokerMessage raspuns = new BrokerMessage("Am replicat stirea \"" + mesajReceptionat.primesteStirea().getTitlu() + "\"", adresaPersonala);
 
         LoggerService.shared.sendLogToLogger("\n==============================================================================\n"
-                + "Broker-ul " + boldedHostAddress
+                + "Broker-ul " + InetAddressUtils.boldedHostAddress()
                 + "\n - a primit cerere de replicare de la broker-ul vecin " + clientSocket.getInetAddress().getHostAddress().toString());
 
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
@@ -292,38 +298,17 @@ public final class BrokerService {
 
     // ========================================== toleranta la defectare ==========================================
     private void stopHeartbeat() {
-        ringManager.stopHeartbeat();
+//        ringManager.stopHeartbeat();
     }
 
     // ========================================== IP addresses ==========================================
-    private ArrayList<InetAddress> getInetAddresses() {
-        ArrayList<InetAddress> inetAddressList = new ArrayList<>();
-
-//        try {
-//            inetAddressList.add(InetAddress.getByName("192.168.30.4"));
-//            inetAddressList.add(InetAddress.getByName("192.168.30.7"));
-//            inetAddressList.add(InetAddress.getByName("192.168.30.9"));
-//            inetAddressList.add(InetAddress.getByName("192.168.30.10"));
-//            inetAddressList.add(InetAddress.getByName("192.168.30.12"));
+//    public ArrayList<InetAddress> getAdreseNoduri() {
+//        return adreseNoduri;
+//    }
 //
-//        } catch (UnknownHostException e) {
-//            LoggerService.shared.sendLogToLogger(e.getMessage());
-//        }
-
-        for(RunningBroker runningBroker: RingManager.shared.listOfRunningRunningBrokers) {
-            inetAddressList.add(runningBroker.getAddress());
-        }
-
-        return inetAddressList;
-    }
-
-    public ArrayList<InetAddress> getAdreseNoduri() {
-        return adreseNoduri;
-    }
-
-    public void setAdreseNoduri(ArrayList<InetAddress> adreseNoduri) {
-        this.adreseNoduri = adreseNoduri;
-    }
+//    public void setAdreseNoduri(ArrayList<InetAddress> adreseNoduri) {
+//        this.adreseNoduri = adreseNoduri;
+//    }
 
     public InetAddress getNodUrmator() {
         return nodUrmator;

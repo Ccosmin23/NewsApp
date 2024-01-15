@@ -1,7 +1,6 @@
 package service;
 
 import architecture.RingManager;
-import com.sun.tools.javac.Main;
 import utils.InetAddressUtils;
 import utils.StringUtils;
 
@@ -16,15 +15,16 @@ public final class LoggerService {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
+    private String loggerIpAddress = "192.168.30.13";
     private int loggerPort = 9700;
 
     public void start() throws IOException, ClassNotFoundException {
         serverSocket = new ServerSocket(loggerPort);
 
         System.out.println("=======================================================================================");
-        System.out.println("\tSalutare! Eu sunt sistemul de log-uri cu adresa IP " + RingManager.shared.boldedHostAddress());
-        System.out.println("\t\tca sa inchizi executia apasa CTRL+C apoi ENTER");
-        System.out.println("=======================================================================================\n");
+        System.out.println("\tSalutare! Eu sunt sistemul de log-uri cu adresa IP " + InetAddressUtils.boldedHostAddress());
+        System.out.println("\t\tca sa inchizi executia apasa CTRL+C apoi ENTER ");
+        System.out.println("======================================================================================\n");
 
         while (true) {
             clientSocket = serverSocket.accept();
@@ -40,7 +40,7 @@ public final class LoggerService {
     }
 
     public void sendLogToLogger(String logMessage) {
-        try (Socket socket = new Socket(RingManager.shared.hostAddress(), loggerPort);
+        try (Socket socket = new Socket(loggerIpAddress, loggerPort);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
             oos.writeObject(logMessage);
         } catch (IOException e) {
@@ -49,15 +49,17 @@ public final class LoggerService {
         }
     }
 
+
     //================================== LOGGER CONNECTION =====================================================
     private ServerSocket serverSocket2;
     private Socket clientSocket2;
+    private String loggerIpAddress2 = "192.168.30.14";
 
     public void start2() throws IOException, ClassNotFoundException {
         serverSocket2 = new ServerSocket(loggerPort);
 
         System.out.println("=======================================================================================");
-        System.out.println("\tSalutare! Eu sunt sistemul de log-uri PENTRU CONEXIUNE cu adresa IP " + RingManager.shared.boldedHostAddress());
+        System.out.println("\tSalutare! Eu sunt sistemul de log-uri PENTRU CONEXIUNE cu adresa IP " + InetAddressUtils.boldedHostAddress());
         System.out.println("\t\tca sa inchizi executia apasa CTRL+C apoi ENTER");
         System.out.println("=======================================================================================\n");
 
@@ -75,7 +77,7 @@ public final class LoggerService {
     }
 
     public void sendLogToLogger2(String logMessage) {
-        try (Socket socket = new Socket(RingManager.shared.hostAddress(), loggerPort);
+        try (Socket socket = new Socket(loggerIpAddress2, loggerPort);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
             oos.writeObject(logMessage);
         } catch (IOException e) {
