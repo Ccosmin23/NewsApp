@@ -68,7 +68,7 @@ public class Main {
 
     public static void startAsABroker() {
         try {
-            BrokerService.shared.start();
+            new BrokerService().start();
         } catch (SocketException e) {
             throw new RuntimeException(e);
         } catch (UnknownHostException e) {

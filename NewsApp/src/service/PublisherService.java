@@ -63,12 +63,12 @@ public final class PublisherService {
             objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
             objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
 
-            BrokerService brokerService = new BrokerService("get first broker", InetAddressUtils.hostAddress());
-            objectOutputStream.writeObject(brokerService);
+//            BrokerService brokerService = new BrokerService("get first broker", InetAddressUtils.hostAddress());
+            objectOutputStream.writeObject("get first broker");
             objectOutputStream.flush();
 
             firstBrokerService = (BrokerService) objectInputStream.readObject();
-            System.out.println("avem adresa " + firstBrokerService.adresaPersonala);
+            System.out.println("avem adresa " + firstBrokerService.getAdresaPersonala());
 
             socketComunicare.close();
             objectOutputStream.close();

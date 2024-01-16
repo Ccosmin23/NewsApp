@@ -26,7 +26,7 @@ public final class SubscriberService {
         // uiAbonat.inchideInterfata();
 
         try {
-            primesteArticole(InetAddress.getByName(RingManager.shared.firstBroker().adresaPersonala.getHostAddress()));
+            primesteArticole(InetAddress.getByName(RingManager.shared.firstBroker().getAdresaPersonala().getHostAddress()));
             listeazaStiri();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

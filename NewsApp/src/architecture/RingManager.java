@@ -47,16 +47,21 @@ public final class RingManager {
 
             Object receivedObject = ois.readObject();
 
-            if (receivedObject instanceof BrokerService && ((BrokerService) receivedObject).getOperationMessage().equals("add new broker")) {
-                System.out.println("am facut un append de broker service pe backend cu adresa IP = " + ((BrokerService) receivedObject).getAdresaPersonala());
-                listOfBrokers.add((BrokerService) receivedObject);
+            if (receivedObject instanceof InetAddress) {
+                System.out.println(" - - - -test - - am primit adresa " + ((InetAddress) receivedObject).getHostAddress());
+                
+            }
+
+            else if (receivedObject instanceof String && receivedObject.equals("add new broker")) {
+                System.out.println("am facut un append de broker service pe backend cu IP = " + InetAddressUtils.hostAddress());
+
                 printAll();
 
-            } else if (receivedObject instanceof BrokerService && ((BrokerService) receivedObject).getOperationMessage().equals("get first broker")) {
+            } else if (receivedObject instanceof String && receivedObject.equals("get first broker")) {
                 System.out.println("un publisher imi cere primul broker");
 
                 if (listOfBrokers.get(0) != null) {
-                    System.out.println("intr-adevar il avem si o sa il dam");
+                    System.out.println("intr-adevar il avem si o sa il dam stiind ca are adresa IP " + listOfBrokers.get(0).getAdresaPersonala());
                     oos.writeObject(listOfBrokers.get(0));
                 } else {
                     System.out.println("dar nu avem nicun broker");

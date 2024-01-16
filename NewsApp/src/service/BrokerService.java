@@ -22,16 +22,15 @@ import utils.SystemSetup;
 
 import static utils.SystemSetup.port;
 
-public final class BrokerService implements Serializable {
-    public static BrokerService shared = new BrokerService();
+public class BrokerService implements Serializable {
+//    public BrokerService shared = new BrokerService();
 
-    String operationMessage = "";
-    InetAddress adresaPersonala;
-    ServerSocket receiverSocket;
-    AtomicBoolean programIsRunning;
+    private String operationMessage = "";
+    private InetAddress adresaPersonala;
+    private ServerSocket receiverSocket;
+    private AtomicBoolean programIsRunning;
 
-    public BrokerService(String operationMessage, InetAddress adresaPersonala) {
-        this.operationMessage = operationMessage;
+    public BrokerService(InetAddress adresaPersonala) {
         this.adresaPersonala = adresaPersonala;
     }
 
@@ -44,7 +43,7 @@ public final class BrokerService implements Serializable {
 
     public BrokerService() {
         this.listaStiri = new NewsField(1, "Stiri");
-//        adresaPersonala = InetAddressUtils.hostAddress();
+        adresaPersonala = InetAddressUtils.hostAddress();
 //        RingManager.shared.appendToRingManagerThis(this);
 
 //        this.adresaPersonala = RingManager.shared.hostAddress();
@@ -76,9 +75,11 @@ public final class BrokerService implements Serializable {
             objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
 //            objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
 
-            System.out.println("o sa folosim adresa = " + InetAddressUtils.hostAddress());
-            BrokerService brokerService = new BrokerService("add new broker", InetAddressUtils.hostAddress());
-            objectOutputStream.writeObject(brokerService);
+            InetAddress address = InetAddressUtils.hostAddress();
+            System.out.println("o sa folosim adresa = " + address);
+
+//            BrokerService brokerService = new BrokerService("add new broker", address);
+            objectOutputStream.writeObject(InetAddressUtils.hostAddress());
             objectOutputStream.flush();
 
 //            firstBrokerService = (BrokerService) objectInputStream.readObject();
@@ -98,7 +99,7 @@ public final class BrokerService implements Serializable {
 
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
-        findSuitableHostAddress();
+//        findSuitableHostAddress();
 //        ringManager.startHeartbeat();
         receive().start();
         userInputHandler();
