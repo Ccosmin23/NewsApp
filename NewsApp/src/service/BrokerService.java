@@ -63,6 +63,66 @@ public class BrokerService implements Serializable {
         }
     }
 
+    public InetAddress getNodCurent() throws ClassNotFoundException {
+        InetAddress nodCurent = null;
+
+        try {
+            ObjectOutputStream objectOutputStream;
+            ObjectInputStream objectInputStream;
+
+            Socket socketComunicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
+
+            objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
+            objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
+
+            objectOutputStream.writeObject("get nod curent");
+            objectOutputStream.flush();
+
+            InetAddress inetAddress = (InetAddress) objectInputStream.readObject();
+//            System.out.println("am primit de la BE nodul curent = " + inetAddress.getHostAddress());
+            nodCurent = inetAddress;
+
+            socketComunicare.close();
+            objectOutputStream.close();
+            objectInputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return nodCurent;
+    }
+
+    public InetAddress getNodUrmator() throws ClassNotFoundException {
+        InetAddress nodUrmator = null;
+
+        try {
+            ObjectOutputStream objectOutputStream;
+            ObjectInputStream objectInputStream;
+
+            Socket socketComunicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
+
+            objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
+            objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
+
+            objectOutputStream.writeObject("get nod urmator");
+            objectOutputStream.flush();
+
+            InetAddress inetAddress = (InetAddress) objectInputStream.readObject();
+//            System.out.println("am primit de la BE nodul urmator = " + inetAddress.getHostAddress());
+            nodUrmator = inetAddress;
+
+            socketComunicare.close();
+            objectOutputStream.close();
+            objectInputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return nodUrmator;
+    }
+
     // ========================================== receive() ==========================================
     public Thread receive () {
         this.programIsRunning = new AtomicBoolean(true);
@@ -189,8 +249,8 @@ public class BrokerService implements Serializable {
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
-        if (!mesajReceptionat.primesteAdresa().equals(RingManager.shared.getNodUrmator())) {
-            LoggerService.shared.sendLogToLogger(" - incearca replicarea articolului la urmatorul vecin " + RingManager.shared.getNodUrmator());
+        if (!mesajReceptionat.primesteAdresa().equals(getNodUrmator())) {
+            LoggerService.shared.sendLogToLogger(" - incearca replicarea articolului la urmatorul vecin " + getNodUrmator());
             replicaArticolLaVecin(mesajReceptionat);
         } else {
             LoggerService.shared.sendLogToLogger(" - a ajuns la capat si nu mai replica si la nodul originar");
@@ -204,8 +264,15 @@ public class BrokerService implements Serializable {
         Socket socketComuicare = null;
 
         try {
+//            if (RingManager.shared.getNodUrmator() == null) {
+//                RingManager.shared.selectNewSuccessor();
+//                LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat: nodUrmator este null" +
+//                        "\n iar nodul curent este " + RingManager.shared.getNodCurrent().getHostAddress());
+//                return;
+//            }
+
             BrokerMessage raspuns;
-            socketComuicare = new Socket(RingManager.shared.getNodUrmator(), SystemSetup.port);
+            socketComuicare = new Socket(getNodUrmator(), SystemSetup.port);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
             ois = new ObjectInputStream(socketComuicare.getInputStream());
@@ -216,7 +283,7 @@ public class BrokerService implements Serializable {
             raspuns = (BrokerMessage) ois.readObject();
 
             if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + RingManager.shared.getNodUrmator() + ") mesajul: " + raspuns.primesteMesaj());
+                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + getNodUrmator() + ") mesajul: " + raspuns.primesteMesaj());
             }
 
         } catch (IOException e) {
