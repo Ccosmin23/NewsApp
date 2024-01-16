@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.SQLOutput;
 
 import architecture.RingManager;
 import model.broker.BrokerMessage;
@@ -39,10 +41,44 @@ public final class PublisherService {
                 case "x":
                     closeProgram();
                     break;
+                case "d":
+                    getFirstBroker();
+                    System.out.println("\n===========\n am primit de la BE un broker service cu adresa = ");
+                    break;
                 default:
                     System.out.println("Optiune invailda");
             }
         }
+    }
+
+    public BrokerService getFirstBroker() throws ClassNotFoundException {
+        BrokerService firstBrokerService = null;
+
+        try {
+            ObjectOutputStream objectOutputStream;
+            ObjectInputStream objectInputStream;
+
+            Socket socketComunicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
+
+            objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
+            objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
+
+            BrokerService brokerService = new BrokerService("get first broker", InetAddressUtils.hostAddress());
+            objectOutputStream.writeObject(brokerService);
+            objectOutputStream.flush();
+
+            firstBrokerService = (BrokerService) objectInputStream.readObject();
+            System.out.println("avem adresa " + firstBrokerService.adresaPersonala);
+
+            socketComunicare.close();
+            objectOutputStream.close();
+            objectInputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return firstBrokerService;
     }
 
     public void trimiteStirea(InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
@@ -51,7 +87,7 @@ public final class PublisherService {
             ObjectInputStream objectInputStream;
 
             BrokerMessage brokerMessage = new BrokerMessage("Hello broker de inel", destinatie);
-            Socket socketComuicare = new Socket(RingManager.shared.starPointBroker().adresaPersonala, SystemSetup.port);
+            Socket socketComuicare = new Socket(destinatie, SystemSetup.port);
             BrokerMessage raspuns;
 
             brokerMessage.seteazaComanda("publica");

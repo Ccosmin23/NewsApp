@@ -25,17 +25,27 @@ import static utils.SystemSetup.port;
 public final class BrokerService implements Serializable {
     public static BrokerService shared = new BrokerService();
 
-    InetAddress adresaPersonala = InetAddressUtils.hostAddress();
+    String operationMessage = "";
+    InetAddress adresaPersonala;
+    ServerSocket receiverSocket;
+    AtomicBoolean programIsRunning;
+
+    public BrokerService(String operationMessage, InetAddress adresaPersonala) {
+        this.operationMessage = operationMessage;
+        this.adresaPersonala = adresaPersonala;
+    }
+
+    // ===================================
+    //proprietatile nefolositoare
+    NewsField listaStiri;
     InetAddress nodUrmator;
 //    ArrayList<InetAddress> adreseNoduri;
 
-    ServerSocket receiverSocket;
-    AtomicBoolean programIsRunning;
-    NewsField listaStiri;
 
     public BrokerService() {
         this.listaStiri = new NewsField(1, "Stiri");
-        RingManager.shared.appendToRingManagerThis(this);
+//        adresaPersonala = InetAddressUtils.hostAddress();
+//        RingManager.shared.appendToRingManagerThis(this);
 
 //        this.adresaPersonala = RingManager.shared.hostAddress();
 //         this.boldedHostAddress = RingManager.shared.boldedHostAddress();
@@ -54,6 +64,37 @@ public final class BrokerService implements Serializable {
 //    }
 
 
+    public void appendNewBroker() {
+//        BrokerService firstBrokerService = null;
+
+        try {
+            ObjectOutputStream objectOutputStream;
+            ObjectInputStream objectInputStream;
+
+            Socket socketComunicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
+
+            objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
+//            objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
+
+            System.out.println("o sa folosim adresa = " + InetAddressUtils.hostAddress());
+            BrokerService brokerService = new BrokerService("add new broker", InetAddressUtils.hostAddress());
+            objectOutputStream.writeObject(brokerService);
+            objectOutputStream.flush();
+
+//            firstBrokerService = (BrokerService) objectInputStream.readObject();
+//            System.out.println("avem adresa " + firstBrokerService.adresaPersonala);
+
+            socketComunicare.close();
+            objectOutputStream.close();
+//            objectInputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+    }
 
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
@@ -117,7 +158,7 @@ public final class BrokerService implements Serializable {
                 BrokerMessage mesajReceptionat;
 
                 try {
-                    receiverSocket = new ServerSocket(port);
+                    receiverSocket = new ServerSocket(SystemSetup.port);
                     LoggerService.shared.sendLogToLogger("Broker-ul " + InetAddressUtils.boldedHostAddress() + " a fost pornit");
 
                     while (programIsRunning.get()) {
@@ -143,8 +184,10 @@ public final class BrokerService implements Serializable {
                             }
 
                         } catch (SocketException e) {
+                            System.out.println("tece pe aici1");
                             System.out.println(e.getMessage());
                         } catch (ClassNotFoundException e) {
+                            System.out.println("tece pe aici2");
                             LoggerService.shared.sendLogToLogger(e.getMessage());
                         }
                     }
@@ -226,7 +269,7 @@ public final class BrokerService implements Serializable {
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
-        if (mesajReceptionat.primesteAdresa().equals(nodUrmator) != true) {
+        if (!mesajReceptionat.primesteAdresa().equals(nodUrmator)) {
             LoggerService.shared.sendLogToLogger(" - incearca replicarea articolului la urmatorul vecin " + nodUrmator);
             replicaArticolLaVecin(mesajReceptionat);
         } else {
@@ -279,7 +322,9 @@ public final class BrokerService implements Serializable {
                 case "s":
 //                    send(InetAddress.getByName("192.168.30.10"));
                     break;
-
+                case "d":
+                    appendNewBroker();
+                    break;
 
                 case "x": {
                     stopHeartbeat();
@@ -324,10 +369,18 @@ public final class BrokerService implements Serializable {
     }
 
     public InetAddress getAdresaPersonala() {
-        return adresaPersonala;
+        return InetAddressUtils.hostAddress();
     }
 
     public void setAdresaPersonala(InetAddress adresaPersonala) {
         this.adresaPersonala = adresaPersonala;
+    }
+
+    public String getOperationMessage() {
+        return operationMessage;
+    }
+
+    public void setOperationMessage(String operationMessage) {
+        this.operationMessage = operationMessage;
     }
 }
