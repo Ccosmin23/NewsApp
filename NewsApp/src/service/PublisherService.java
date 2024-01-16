@@ -63,7 +63,6 @@ public final class PublisherService {
             objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
             objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
 
-//            BrokerService brokerService = new BrokerService("get first broker", InetAddressUtils.hostAddress());
             objectOutputStream.writeObject("get first broker");
             objectOutputStream.flush();
 

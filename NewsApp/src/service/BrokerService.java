@@ -35,113 +35,40 @@ public class BrokerService implements Serializable {
     }
 
     // ===================================
-    //proprietatile nefolositoare
+    //cred ca sunt proprietatile nefolositoare
     NewsField listaStiri;
     InetAddress nodUrmator;
-//    ArrayList<InetAddress> adreseNoduri;
 
 
     public BrokerService() {
         this.listaStiri = new NewsField(1, "Stiri");
         adresaPersonala = InetAddressUtils.hostAddress();
-//        RingManager.shared.appendToRingManagerThis(this);
-
-//        this.adresaPersonala = RingManager.shared.hostAddress();
-//         this.boldedHostAddress = RingManager.shared.boldedHostAddress();
-//        this.ringManager = new RingManager(this);
-//        this.adreseNoduri = getRingManagerAddresses();
-    }
-
-//    private ArrayList<InetAddress> getRingManagerAddresses() {
-//        ArrayList<InetAddress> addresses = new ArrayList<>();
-//
-//        for (RunningBroker broker : RingManager.shared.listOfBrokers) {
-//            addresses.add(broker.getAddress());
-//        }
-//
-//        return addresses;
-//    }
-
-
-    public void appendNewBroker() {
-//        BrokerService firstBrokerService = null;
-
-        try {
-            ObjectOutputStream objectOutputStream;
-            ObjectInputStream objectInputStream;
-
-            Socket socketComunicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
-
-            objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
-//            objectInputStream = new ObjectInputStream(socketComunicare.getInputStream());
-
-            InetAddress address = InetAddressUtils.hostAddress();
-            System.out.println("o sa folosim adresa = " + address);
-
-//            BrokerService brokerService = new BrokerService("add new broker", address);
-            objectOutputStream.writeObject(InetAddressUtils.hostAddress());
-            objectOutputStream.flush();
-
-//            firstBrokerService = (BrokerService) objectInputStream.readObject();
-//            System.out.println("avem adresa " + firstBrokerService.adresaPersonala);
-
-            socketComunicare.close();
-            objectOutputStream.close();
-//            objectInputStream.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        catch (ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
+        appendNewBroker();
     }
 
     // ========================================== start() ==========================================
     public void start() throws UnknownHostException, SocketException {
-//        findSuitableHostAddress();
-//        ringManager.startHeartbeat();
         receive().start();
         userInputHandler();
     }
 
-    private void findSuitableHostAddress() throws SocketException, UnknownHostException {
-        InetAddress adresaGazda = searchHostAddressIntoLocalMachine();
+    public void appendNewBroker() {
+        try {
+            Socket socketComunicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(socketComunicare.getOutputStream());
 
-//        if (adreseNoduri.contains(adresaGazda)) {
-//            this.nodUrmator = adreseNoduri.get((adreseNoduri.indexOf(adresaGazda) + 1) % adreseNoduri.size());
-//        }
+            InetAddress address = InetAddressUtils.hostAddress();
+            System.out.println("i-am trimis lui RingManager adresa = " + address);
 
-        if (adresaGazda != null) {
-            adresaPersonala = InetAddress.getByAddress(adresaGazda.getAddress());
-        } else {
-            LoggerService.shared.sendLogToLogger("nu se poate gasi o adresa gazda");
+            objectOutputStream.writeObject(InetAddressUtils.hostAddress());
+            objectOutputStream.flush();
+
+            socketComunicare.close();
+            objectOutputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
-
-    private InetAddress searchHostAddressIntoLocalMachine() throws SocketException {
-        InetAddress adresaGazda = null;
-        Enumeration<NetworkInterface> interfeteRetea = NetworkInterface.getNetworkInterfaces();
-
-        while (interfeteRetea.hasMoreElements()) {
-            NetworkInterface networkInterface = interfeteRetea.nextElement();
-            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-
-            while (inetAddresses.hasMoreElements()) {
-                InetAddress inetAddress = inetAddresses.nextElement();
-
-//                if (adreseNoduri.contains(inetAddress) && !inetAddress.isLoopbackAddress()) {
-//                    adresaGazda = inetAddress;
-//                    break;
-//                }
-            }
-
-            if (adresaGazda != null) {
-                break;
-            }
-        }
-
-        return adresaGazda;
     }
 
     // ========================================== receive() ==========================================
@@ -320,13 +247,6 @@ public class BrokerService implements Serializable {
         while (this.programIsRunning.get()) {
             Console consola = System.console();
             switch (consola.readLine("-> ")) {
-                case "s":
-//                    send(InetAddress.getByName("192.168.30.10"));
-                    break;
-                case "d":
-                    appendNewBroker();
-                    break;
-
                 case "x": {
                     stopHeartbeat();
                     this.programIsRunning.set(false);
@@ -351,15 +271,6 @@ public class BrokerService implements Serializable {
     private void stopHeartbeat() {
 //        ringManager.stopHeartbeat();
     }
-
-    // ========================================== IP addresses ==========================================
-//    public ArrayList<InetAddress> getAdreseNoduri() {
-//        return adreseNoduri;
-//    }
-//
-//    public void setAdreseNoduri(ArrayList<InetAddress> adreseNoduri) {
-//        this.adreseNoduri = adreseNoduri;
-//    }
 
     public InetAddress getNodUrmator() {
         return nodUrmator;

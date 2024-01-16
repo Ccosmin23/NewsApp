@@ -52,22 +52,6 @@ public final class RingManager {
             } else if (receivedObject instanceof String && receivedObject.equals("get first broker")) {
                 getFirstBrokerFromListWith(oos);
             }
-//            else if (receivedObject instanceof BrokerService) {
-//                BrokerService brokerService = (BrokerService) ois.readObject();
-//                String boldedIP = StringUtils.applyBoldTo(brokerService.getAdresaPersonala().getHostAddress(), false);
-//                System.out.println("a venit si pe la noi sa ceara");
-//
-//                if (brokerService != null) {
-//                    listOfBrokers.add(brokerService);
-//                    System.out.println("Am primit cu succes un nou broker cu adresa IP: " + boldedIP);
-//                } else {
-//                    System.out.println("Am primit un broker NULL cu adresa IP: " + boldedIP + " si nu putem sa il adaugam");
-//                }
-//            } else {
-//                System.out.println("Unexpected object received: " + receivedObject);
-//            }
-
-//            oos.writeObject(new BrokerService());
         }
 
         ois.close();
@@ -98,30 +82,15 @@ public final class RingManager {
         }
     }
 
-    public void appendToRingManagerThis(BrokerService brokerService) {
-        try {
-            Socket socket = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
-            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-            oos.writeObject(brokerService);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-
-    public BrokerService firstBroker() {
 
 
 
 
-        if (listOfBrokers.contains(0)) {
-            return listOfBrokers.get(0);
-        } else {
-            return null;
-        }
-    }
+
+
+
+
+
 
 
     public void startHeartbeat() {

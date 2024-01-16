@@ -25,12 +25,13 @@ public final class SubscriberService {
         // uiAbonat.afiseazaInterfata();
         // uiAbonat.inchideInterfata();
 
-        try {
-            primesteArticole(InetAddress.getByName(RingManager.shared.firstBroker().getAdresaPersonala().getHostAddress()));
-            listeazaStiri();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        // acest try - catch trebuie decomentat
+//        try {
+//            primesteArticole(InetAddress.getByName(RingManager.shared.().getAdresaPersonala().getHostAddress()));
+//            listeazaStiri();
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void primesteArticole (InetAddress destinatie) throws ClassNotFoundException {
