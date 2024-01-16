@@ -102,8 +102,6 @@ public final class RingManager {
     }
 
     private void getNodCurent(ObjectOutputStream oos) throws IOException {
-        System.out.println("Mi se cere nodul curent");
-
         if (nodCurrent != null) {
             System.out.println("avem nodul curent cu adresa IP = " + nodCurrent);
             oos.writeObject(nodCurrent);
@@ -113,8 +111,6 @@ public final class RingManager {
     }
 
     private void getNodUrmator(ObjectOutputStream oos) throws IOException {
-        System.out.println("Mi se cere nodul urmator");
-
         if (nodUrmator != null) {
             System.out.println("avem un nod urmator care are adresa IP = " + nodUrmator);
             oos.writeObject(nodUrmator);
@@ -160,10 +156,11 @@ public final class RingManager {
 //            }
 
             send(nextNode);
+            selectNewSuccessor();
 
         } catch (Exception e) {
             LoggerService.shared.sendLogToLogger2("Avem o eroare neasteptata in metoda heartbeat: " + e);
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 

@@ -199,7 +199,7 @@ public class BrokerService implements Serializable {
         }
     }
 
-    private void heartbeat(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws IOException {
+    private void heartbeat(BrokerMessage mesajReceptionat, ObjectOutputStream oos) throws IOException, ClassNotFoundException {
         BrokerMessage raspuns = new BrokerMessage("heartbeat receptionat", adresaPersonala);;
         Boolean writeCompleted = false;
 
@@ -209,9 +209,9 @@ public class BrokerService implements Serializable {
         String boldedIP = StringUtils.applyBoldTo(mesajReceptionat.primesteMesaj(), false);
 
         LoggerService.shared.sendLogToLogger2("Avem conexiune intre "
-                + InetAddressUtils.boldedHostAddress()
+                + getNodCurent().getHostAddress()
                 + " si "
-                + boldedIP
+                + getNodUrmator().getHostAddress()
                 + "\n - raspuns: " + status + "\n");
     }
 

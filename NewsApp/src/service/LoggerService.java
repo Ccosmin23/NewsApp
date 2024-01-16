@@ -16,7 +16,6 @@ public final class LoggerService {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
-    private String loggerIpAddress = "192.168.30.13";
 
     public void start() throws IOException, ClassNotFoundException {
         serverSocket = new ServerSocket(SystemSetup.port);
@@ -40,7 +39,7 @@ public final class LoggerService {
     }
 
     public void sendLogToLogger(String logMessage) {
-        try (Socket socket = new Socket(loggerIpAddress, SystemSetup.port);
+        try (Socket socket = new Socket(SystemSetup.loggerIPAddress, SystemSetup.port);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
             oos.writeObject(logMessage);
         } catch (IOException e) {

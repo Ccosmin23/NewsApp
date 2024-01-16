@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.sql.SQLOutput;
 
-import architecture.RingManager;
 import model.broker.BrokerMessage;
 import model.news.NewsStory;
 import ui.PublisherView;
@@ -42,7 +39,7 @@ public final class PublisherService {
                     closeProgram();
                     break;
                 case "d":
-                    getFirstBroker();
+                    getFirstBrokerInetAddress();
                     break;
                 default:
                     System.out.println("Optiune invailda");
@@ -50,7 +47,9 @@ public final class PublisherService {
         }
     }
 
-    public void getFirstBroker() throws ClassNotFoundException {
+    public InetAddress getFirstBrokerInetAddress() throws ClassNotFoundException {
+        InetAddress inetAddress = null;
+
         try {
             ObjectOutputStream objectOutputStream;
             ObjectInputStream objectInputStream;
@@ -63,7 +62,7 @@ public final class PublisherService {
             objectOutputStream.writeObject("get first broker");
             objectOutputStream.flush();
 
-            InetAddress inetAddress = (InetAddress) objectInputStream.readObject();
+            inetAddress = (InetAddress) objectInputStream.readObject();
             System.out.println("am primit de la BE adresa = " + inetAddress.getHostAddress());
 
             socketComunicare.close();
@@ -73,6 +72,8 @@ public final class PublisherService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return inetAddress;
     }
 
     public void trimiteStirea(InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
@@ -106,13 +107,12 @@ public final class PublisherService {
         }
     }
 
-    private void createArticle() throws UnknownHostException {
+    private void createArticle() throws UnknownHostException, ClassNotFoundException {
         NewsStory stireaCreata = publisherView.creeazaArticol();
-        String brokerIPAddress = "192.168.30.10";
 
         if (stireaCreata != null) {
             try {
-                trimiteStirea(InetAddress.getByName(brokerIPAddress), stireaCreata);
+                trimiteStirea(getFirstBrokerInetAddress(), stireaCreata);
                 LoggerService.shared.sendLogToLogger("\nPublisher-ul " + InetAddressUtils.boldedHostAddress() + " a creat cu succes stirea cu ID-ul " + stireaCreata.getId());
 
             } catch (ClassNotFoundException e) {
@@ -129,7 +129,6 @@ public final class PublisherService {
         }
 
         NewsStory[] articles = new NewsStory[numberOfArticles];
-        String brokerIPAddress = "192.168.30.10";
         String content;
         String title;
         int i = 0;
@@ -141,7 +140,7 @@ public final class PublisherService {
 
                 articles[i] = new NewsStory(null, title, content);
 
-                trimiteStirea(InetAddress.getByName(brokerIPAddress), articles[i]);
+                trimiteStirea(getFirstBrokerInetAddress(), articles[i]);
                 
                 i += 1;
             }
