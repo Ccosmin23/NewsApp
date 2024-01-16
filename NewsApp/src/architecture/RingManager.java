@@ -48,39 +48,24 @@ public final class RingManager {
             Object receivedObject = ois.readObject();
 
             if (receivedObject instanceof InetAddress) {
-                System.out.println(" - - - -test - - am primit adresa " + ((InetAddress) receivedObject).getHostAddress());
-                
-            }
-
-            else if (receivedObject instanceof String && receivedObject.equals("add new broker")) {
-                System.out.println("am facut un append de broker service pe backend cu IP = " + InetAddressUtils.hostAddress());
-
-                printAll();
-
+                createAndAppendNewBrokerWith(((InetAddress) receivedObject));
             } else if (receivedObject instanceof String && receivedObject.equals("get first broker")) {
-                System.out.println("un publisher imi cere primul broker");
-
-                if (listOfBrokers.get(0) != null) {
-                    System.out.println("intr-adevar il avem si o sa il dam stiind ca are adresa IP " + listOfBrokers.get(0).getAdresaPersonala());
-                    oos.writeObject(listOfBrokers.get(0));
-                } else {
-                    System.out.println("dar nu avem nicun broker");
-                }
-
-            } else if (receivedObject instanceof BrokerService) {
-                BrokerService brokerService = (BrokerService) ois.readObject();
-                String boldedIP = StringUtils.applyBoldTo(brokerService.getAdresaPersonala().getHostAddress(), false);
-                System.out.println("a venit si pe la noi sa ceara");
-
-                if (brokerService != null) {
-                    listOfBrokers.add(brokerService);
-                    System.out.println("Am primit cu succes un nou broker cu adresa IP: " + boldedIP);
-                } else {
-                    System.out.println("Am primit un broker NULL cu adresa IP: " + boldedIP + " si nu putem sa il adaugam");
-                }
-            } else {
-                System.out.println("Unexpected object received: " + receivedObject);
+                getFirstBrokerFromListWith(oos);
             }
+//            else if (receivedObject instanceof BrokerService) {
+//                BrokerService brokerService = (BrokerService) ois.readObject();
+//                String boldedIP = StringUtils.applyBoldTo(brokerService.getAdresaPersonala().getHostAddress(), false);
+//                System.out.println("a venit si pe la noi sa ceara");
+//
+//                if (brokerService != null) {
+//                    listOfBrokers.add(brokerService);
+//                    System.out.println("Am primit cu succes un nou broker cu adresa IP: " + boldedIP);
+//                } else {
+//                    System.out.println("Am primit un broker NULL cu adresa IP: " + boldedIP + " si nu putem sa il adaugam");
+//                }
+//            } else {
+//                System.out.println("Unexpected object received: " + receivedObject);
+//            }
 
 //            oos.writeObject(new BrokerService());
         }
@@ -90,12 +75,29 @@ public final class RingManager {
         clientSocket.close();
     }
 
+    private void createAndAppendNewBrokerWith(InetAddress inetAddress) {
+        System.out.println("Am primit adresa IP " + inetAddress.getHostAddress() + " si am creat un broker cu aceasta adresa");
+        listOfBrokers.add(new BrokerService(inetAddress));
+    }
+
+    private void getFirstBrokerFromListWith(ObjectOutputStream oos) throws IOException {
+        System.out.println("un publisher imi cere primul broker din lista");
+
+        if (listOfBrokers.get(0) != null) {
+            System.out.println("intr-adevar il avem si o sa il dam stiind ca are adresa IP " + listOfBrokers.get(0).getAdresaPersonala());
+            oos.writeObject(listOfBrokers.get(0));
+        } else {
+            System.out.println("dar nu avem nicun broker momentan");
+        }
+    }
+
     private void printAll() {
         System.out.println("\n============\n");
         for(BrokerService br: listOfBrokers) {
             System.out.println(br.getAdresaPersonala());
         }
     }
+
     public void appendToRingManagerThis(BrokerService brokerService) {
         try {
             Socket socket = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
