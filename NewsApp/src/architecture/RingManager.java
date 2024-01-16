@@ -20,8 +20,40 @@ public final class RingManager {
 
     private final Timer heartbeatTimer;
     public ArrayList<BrokerService> listOfBrokers = new ArrayList<>();
+
+    private InetAddress nodCurrent;
+    private InetAddress nodUrmator;
+
     public RingManager() {
         this.heartbeatTimer = new Timer();
+//        nodCurrent = InetAddressUtils.hostAddress();  // Set an initial value
+    }
+
+    private void initializeCurrentNode() {
+        nodCurrent = listOfBrokers.get(0).getAdresaPersonala();
+    }
+
+    private void buildRingArchitecture() {
+        if (!listOfBrokers.isEmpty()) {
+            //verificam daca nodul curent este in lista
+            int currentIndex = listOfBrokers.indexOf(nodCurrent);
+
+            if (currentIndex != -1) {
+                // calculam indexul nodului urmator
+                // tinand cont ca trebuie sa ne raportam conform arhitecturii circulare
+                int nextIndex = (currentIndex + 1) % listOfBrokers.size();
+
+                //luam adresa si o asignam nodului curent
+                nodCurrent = listOfBrokers.get(currentIndex).getAdresaPersonala();
+
+                //setam adresa nodului urmator
+                nodUrmator = listOfBrokers.get(nextIndex).getAdresaPersonala();
+            } else {
+                // un mic handling pentru cazul in care avem un singur nod in lista
+                nodCurrent = listOfBrokers.get(0).getAdresaPersonala();
+                nodUrmator = listOfBrokers.get(0).getAdresaPersonala();
+            }
+        }
     }
 
     public void start() throws IOException, ClassNotFoundException {
@@ -49,6 +81,7 @@ public final class RingManager {
 
             if (receivedObject instanceof InetAddress) {
                 createAndAppendNewBrokerWith(((InetAddress) receivedObject));
+                initializeCurrentNode();
             } else if (receivedObject instanceof String && receivedObject.equals("get first broker")) {
                 getFirstBrokerFromListWith(oos);
             }
@@ -60,8 +93,19 @@ public final class RingManager {
     }
 
     private void createAndAppendNewBrokerWith(InetAddress inetAddress) {
-        System.out.println("Am primit adresa IP " + inetAddress.getHostAddress() + " si am creat un broker cu aceasta adresa");
-        listOfBrokers.add(new BrokerService(inetAddress));
+        BrokerService newBroker = new BrokerService(inetAddress);
+
+        System.out.println("Am primit adresa IP " + newBroker.getAdresaPersonala() + " si am creat un broker cu aceasta adresa");
+        listOfBrokers.add(newBroker);
+
+        // daaca e primul broker din lista atunci setam nodul curent si urmator cu adresa broker-ului
+        if (listOfBrokers.size() == 1) {
+            nodCurrent = newBroker.getAdresaPersonala();
+            nodUrmator = newBroker.getAdresaPersonala();
+        } else {
+            //altfel facem update si reconfiguram sistemul
+            buildRingArchitecture();
+        }
     }
 
     private void getFirstBrokerFromListWith(ObjectOutputStream oos) throws IOException {
@@ -73,6 +117,7 @@ public final class RingManager {
             printAll();
 
             oos.writeObject(listOfBrokers.get(0).getAdresaPersonala());
+            buildRingArchitecture();
         } else {
             System.out.println("dar nu avem nicun broker momentan");
         }
@@ -218,5 +263,21 @@ public final class RingManager {
     public void stopHeartbeat() {
 //        heartbeatTimer.cancel();
 //        heartbeatTimer.purge();
+    }
+
+    public InetAddress getNodCurrent() {
+        return nodCurrent;
+    }
+
+    public void setNodCurrent(InetAddress nodCurrent) {
+        this.nodCurrent = nodCurrent;
+    }
+
+    public InetAddress getNodUrmator() {
+        return nodUrmator;
+    }
+
+    public void setNodUrmator(InetAddress nodUrmator) {
+        this.nodUrmator = nodUrmator;
     }
 }

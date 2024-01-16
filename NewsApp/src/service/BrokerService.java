@@ -26,16 +26,11 @@ public class BrokerService implements Serializable {
     private InetAddress adresaPersonala;
     private ServerSocket receiverSocket;
     private AtomicBoolean programIsRunning;
+    private NewsField listaStiri;
 
     public BrokerService(InetAddress adresaPersonala) {
         this.adresaPersonala = adresaPersonala;
     }
-
-    // ===================================
-    //cred ca sunt proprietatile nefolositoare
-    NewsField listaStiri;
-    InetAddress nodUrmator;
-
 
     public BrokerService() {
         this.listaStiri = new NewsField(1, "Stiri");
@@ -194,8 +189,8 @@ public class BrokerService implements Serializable {
         listaStiri.adaugaStire(mesajReceptionat.primesteStirea());
         oos.writeObject(raspuns);
 
-        if (!mesajReceptionat.primesteAdresa().equals(nodUrmator)) {
-            LoggerService.shared.sendLogToLogger(" - incearca replicarea articolului la urmatorul vecin " + nodUrmator);
+        if (!mesajReceptionat.primesteAdresa().equals(RingManager.shared.getNodUrmator())) {
+            LoggerService.shared.sendLogToLogger(" - incearca replicarea articolului la urmatorul vecin " + RingManager.shared.getNodUrmator());
             replicaArticolLaVecin(mesajReceptionat);
         } else {
             LoggerService.shared.sendLogToLogger(" - a ajuns la capat si nu mai replica si la nodul originar");
@@ -210,7 +205,7 @@ public class BrokerService implements Serializable {
 
         try {
             BrokerMessage raspuns;
-            socketComuicare = new Socket(nodUrmator, SystemSetup.port);
+            socketComuicare = new Socket(RingManager.shared.getNodUrmator(), SystemSetup.port);
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
             ois = new ObjectInputStream(socketComuicare.getInputStream());
@@ -221,21 +216,13 @@ public class BrokerService implements Serializable {
             raspuns = (BrokerMessage) ois.readObject();
 
             if (raspuns != null) {
-                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + nodUrmator + ") mesajul: " + raspuns.primesteMesaj());
+                LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + RingManager.shared.getNodUrmator() + ") mesajul: " + raspuns.primesteMesaj());
             }
 
         } catch (IOException e) {
             LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat: " + e.getMessage());
         } catch (ClassNotFoundException e) {
             LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat (ClassNotFoundException): " + e.getMessage());
-        } finally {
-            try {
-                ois.close();
-                oos.close();
-                socketComuicare.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
