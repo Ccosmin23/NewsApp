@@ -60,7 +60,7 @@ public class BrokerService implements Serializable {
             InetAddress address = InetAddressUtils.hostAddress();
             System.out.println("i-am trimis lui RingManager adresa = " + address);
 
-            objectOutputStream.writeObject(InetAddressUtils.hostAddress());
+            objectOutputStream.writeObject(address);
             objectOutputStream.flush();
 
             socketComunicare.close();
