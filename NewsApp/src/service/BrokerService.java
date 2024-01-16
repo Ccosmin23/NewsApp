@@ -23,9 +23,6 @@ import utils.SystemSetup;
 import static utils.SystemSetup.port;
 
 public class BrokerService implements Serializable {
-//    public BrokerService shared = new BrokerService();
-
-    private String operationMessage = "";
     private InetAddress adresaPersonala;
     private ServerSocket receiverSocket;
     private AtomicBoolean programIsRunning;
@@ -272,27 +269,11 @@ public class BrokerService implements Serializable {
 //        ringManager.stopHeartbeat();
     }
 
-    public InetAddress getNodUrmator() {
-        return nodUrmator;
-    }
-
-    public void setNodUrmator(InetAddress nodUrmator) {
-        this.nodUrmator = nodUrmator;
-    }
-
     public InetAddress getAdresaPersonala() {
-        return InetAddressUtils.hostAddress();
+        return adresaPersonala;
     }
 
     public void setAdresaPersonala(InetAddress adresaPersonala) {
         this.adresaPersonala = adresaPersonala;
-    }
-
-    public String getOperationMessage() {
-        return operationMessage;
-    }
-
-    public void setOperationMessage(String operationMessage) {
-        this.operationMessage = operationMessage;
     }
 }

@@ -69,17 +69,20 @@ public final class RingManager {
 
         if (listOfBrokers.get(0) != null) {
             System.out.println("intr-adevar il avem si o sa il dam stiind ca are adresa IP " + listOfBrokers.get(0).getAdresaPersonala());
-            oos.writeObject(listOfBrokers.get(0));
+            System.out.println("LISTA NOASTRA CONTINE URMATOARELE:");
+            printAll();
+
+            oos.writeObject(listOfBrokers.get(0).getAdresaPersonala());
         } else {
             System.out.println("dar nu avem nicun broker momentan");
         }
     }
 
     private void printAll() {
-        System.out.println("\n============\n");
         for(BrokerService br: listOfBrokers) {
             System.out.println(br.getAdresaPersonala());
         }
+        System.out.println("\n============\n");
     }
 
 

@@ -43,7 +43,6 @@ public final class PublisherService {
                     break;
                 case "d":
                     getFirstBroker();
-                    System.out.println("\n===========\n am primit de la BE un broker service cu adresa = ");
                     break;
                 default:
                     System.out.println("Optiune invailda");
@@ -51,9 +50,7 @@ public final class PublisherService {
         }
     }
 
-    public BrokerService getFirstBroker() throws ClassNotFoundException {
-        BrokerService firstBrokerService = null;
-
+    public void getFirstBroker() throws ClassNotFoundException {
         try {
             ObjectOutputStream objectOutputStream;
             ObjectInputStream objectInputStream;
@@ -66,8 +63,8 @@ public final class PublisherService {
             objectOutputStream.writeObject("get first broker");
             objectOutputStream.flush();
 
-            firstBrokerService = (BrokerService) objectInputStream.readObject();
-            System.out.println("avem adresa " + firstBrokerService.getAdresaPersonala());
+            InetAddress inetAddress = (InetAddress) objectInputStream.readObject();
+            System.out.println("am primit de la BE adresa = " + inetAddress.getHostAddress());
 
             socketComunicare.close();
             objectOutputStream.close();
@@ -76,8 +73,6 @@ public final class PublisherService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return firstBrokerService;
     }
 
     public void trimiteStirea(InetAddress destinatie, NewsStory stirea) throws ClassNotFoundException {
