@@ -26,29 +26,45 @@ public final class SubscriberService {
         // uiAbonat.inchideInterfata();
 
         // acest try - catch trebuie decomentat
-//        try {
-//            primesteArticole(InetAddress.getByName(RingManager.shared.().getAdresaPersonala().getHostAddress()));
-//            listeazaStiri();
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
+       try {
+           primesteArticole();
+           listeazaStiri();
+       } catch (ClassNotFoundException e) {
+           e.printStackTrace();
+       }
     }
 
-    public void primesteArticole (InetAddress destinatie) throws ClassNotFoundException {
+    public void primesteArticole () throws ClassNotFoundException {
         try {
             ObjectOutputStream oos;
             ObjectInputStream ois;
-            BrokerMessage msg = new BrokerMessage("Hello broker", destinatie);
-            Socket socketComuicare = new Socket(destinatie, SystemSetup.port);
+            Socket socketComuicare = new Socket(SystemSetup.ringManagerIpAddress, SystemSetup.port);
             BrokerMessage raspuns;
-
-            // Comanda "articole" îi va spune broker-ului să trimită
-            // o listă de știri în răspunsul pe care îl va furniza
-            msg.seteazaComanda("articole");
+            InetAddress adresaBroker;
 
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
             ois = new ObjectInputStream(socketComuicare.getInputStream());
             
+            oos.writeObject("get nod urmator");
+            oos.flush();
+
+            // Extrage răspunsul broker-ului care are lista de știri
+            adresaBroker = (InetAddress) ois.readObject();
+            socketComuicare.close();
+            oos.close();
+            ois.close();
+
+            // Comanda "articole" îi va spune broker-ului să trimită
+            // o listă de știri în răspunsul pe care îl va furniza
+            BrokerMessage msg = new BrokerMessage("Hello broker", adresaBroker);
+            msg.seteazaComanda("articole");
+
+            socketComuicare = new Socket(adresaBroker, SystemSetup.port);
+            oos = new ObjectOutputStream(socketComuicare.getOutputStream());
+            ois = new ObjectInputStream(socketComuicare.getInputStream());
+            
+            System.out.println("HEYY!");
+
             oos.writeObject(msg);
             oos.flush();
 

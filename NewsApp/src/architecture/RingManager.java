@@ -22,8 +22,8 @@ public final class RingManager {
     private final Timer heartbeatTimer;
     public ArrayList<BrokerService> listOfBrokers = new ArrayList<>();
 
-    private InetAddress nodCurrent;
-    private InetAddress nodUrmator;
+    private BrokerService nodCurrent;
+    private BrokerService nodUrmator;
 
     public RingManager() {
         this.heartbeatTimer = new Timer();
@@ -78,8 +78,8 @@ public final class RingManager {
 
         // daaca e primul broker din lista atunci setam nodul curent si urmator cu adresa broker-ului
         if (listOfBrokers.size() == 1) {
-            nodCurrent = newBroker.getAdresaPersonala();
-            nodUrmator = newBroker.getAdresaPersonala();
+            nodCurrent = newBroker;
+            nodUrmator = newBroker;
         } else {
             //altfel facem update si reconfiguram sistemul
             buildRingArchitecture();
@@ -103,8 +103,8 @@ public final class RingManager {
 
     private void getNodCurent(ObjectOutputStream oos) throws IOException {
         if (nodCurrent != null) {
-            System.out.println("avem nodul curent cu adresa IP = " + nodCurrent);
-            oos.writeObject(nodCurrent);
+            System.out.println("avem nodul curent cu adresa IP = " + nodCurrent.getAdresaPersonala());
+            oos.writeObject(nodCurrent.getAdresaPersonala());
         } else {
             System.out.println("nu avem nod curent");
         }
@@ -112,8 +112,8 @@ public final class RingManager {
 
     private void getNodUrmator(ObjectOutputStream oos) throws IOException {
         if (nodUrmator != null) {
-            System.out.println("avem un nod urmator care are adresa IP = " + nodUrmator);
-            oos.writeObject(nodUrmator);
+            System.out.println("avem un nod urmator care are adresa IP = " + nodUrmator.getAdresaPersonala());
+            oos.writeObject(nodUrmator.getAdresaPersonala());
             selectNewSuccessor();
 
         } else {
@@ -198,7 +198,7 @@ public final class RingManager {
     }
 
     private void initializeCurrentNode() {
-        nodCurrent = listOfBrokers.get(0).getAdresaPersonala();
+        nodCurrent = listOfBrokers.get(0);
     }
 
     private void buildRingArchitecture() {
@@ -212,14 +212,14 @@ public final class RingManager {
                 int nextIndex = (currentIndex + 1) % listOfBrokers.size();
 
                 //luam adresa si o asignam nodului curent
-                nodCurrent = listOfBrokers.get(currentIndex).getAdresaPersonala();
+                nodCurrent = listOfBrokers.get(currentIndex);
 
                 //setam adresa nodului urmator
-                nodUrmator = listOfBrokers.get(nextIndex).getAdresaPersonala();
+                nodUrmator = listOfBrokers.get(nextIndex);
             } else {
                 // un mic handling pentru cazul in care avem un singur nod in lista
-                nodCurrent = listOfBrokers.get(0).getAdresaPersonala();
-                nodUrmator = listOfBrokers.get(0).getAdresaPersonala();
+                nodCurrent = listOfBrokers.get(0);
+                nodUrmator = listOfBrokers.get(0);
             }
         }
     }
@@ -243,7 +243,7 @@ public final class RingManager {
         if (!listOfBrokers.isEmpty()) {
             int currentSuccessorIndex = listOfBrokers.indexOf(nodUrmator);
             int newSuccessorIndex = (currentSuccessorIndex + 1) % listOfBrokers.size();
-            nodUrmator = listOfBrokers.get(newSuccessorIndex).getAdresaPersonala();
+            nodUrmator = listOfBrokers.get(newSuccessorIndex);
         } else {
             System.out.println("EROARE FRATE");
         }
@@ -280,18 +280,18 @@ public final class RingManager {
     }
 
     public InetAddress getNodCurrent() {
-        return nodCurrent;
+        return nodCurrent.getAdresaPersonala();
     }
 
-    public void setNodCurrent(InetAddress nodCurrent) {
+    public void setNodCurrent(BrokerService nodCurrent) {
         this.nodCurrent = nodCurrent;
     }
 
     public InetAddress getNodUrmator() {
-        return nodUrmator;
+        return nodUrmator.getAdresaPersonala();
     }
 
-    public void setNodUrmator(InetAddress nodUrmator) {
+    public void setNodUrmator(BrokerService nodUrmator) {
         this.nodUrmator = nodUrmator;
     }
 }
