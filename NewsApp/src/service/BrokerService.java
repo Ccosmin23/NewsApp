@@ -232,7 +232,7 @@ public class BrokerService implements Serializable {
     }
 
     private void provideNews(ObjectOutputStream oos) throws IOException {
-        BrokerMessage raspuns = new BrokerMessage("Ti-am receptionat nevoia de date (articolele in acest caz)!", adresaPersonala);
+        BrokerMessage raspuns = new BrokerMessage("Ti-am trimis lista de articole.", adresaPersonala);
         raspuns.seteazaListaStiri(listaStiri);
 
         LoggerService.shared.sendLogToLogger("\nAm primit mesaj de la subscriber");
@@ -286,6 +286,9 @@ public class BrokerService implements Serializable {
                 LoggerService.shared.sendLogToLogger(" - dupa replicare a primit de la vecinul urmator (" + getNodUrmator() + ") mesajul: " + raspuns.primesteMesaj());
             }
 
+            oos.close();
+            ois.close();
+            socketComuicare.close();
         } catch (IOException e) {
             LoggerService.shared.sendLogToLogger(" - replicarea articolului la vecin a esuat: " + e.getMessage());
         } catch (ClassNotFoundException e) {

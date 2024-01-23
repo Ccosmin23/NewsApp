@@ -62,8 +62,6 @@ public final class SubscriberService {
             socketComuicare = new Socket(adresaBroker, SystemSetup.port);
             oos = new ObjectOutputStream(socketComuicare.getOutputStream());
             ois = new ObjectInputStream(socketComuicare.getInputStream());
-            
-            System.out.println("HEYY!");
 
             oos.writeObject(msg);
             oos.flush();
