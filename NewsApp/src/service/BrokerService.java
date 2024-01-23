@@ -2,25 +2,16 @@ package service;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import architecture.RingManager;
 import model.broker.BrokerMessage;
-import model.broker.RunningBroker;
 import model.news.NewsField;
-import model.news.NewsStory;
 import utils.InetAddressUtils;
 import utils.StringUtils;
 import utils.SystemSetup;
-
-import static utils.SystemSetup.port;
 
 public class BrokerService implements Serializable {
     private InetAddress adresaPersonala;

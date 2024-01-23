@@ -52,7 +52,6 @@ public final class LoggerService {
     //================================== LOGGER CONNECTION =====================================================
     private ServerSocket serverSocket2;
     private Socket clientSocket2;
-    private String loggerIpAddress2 = "192.168.30.14";
 
     public void start2() throws IOException, ClassNotFoundException {
         serverSocket2 = new ServerSocket(SystemSetup.port);
@@ -76,7 +75,7 @@ public final class LoggerService {
     }
 
     public void sendLogToLogger2(String logMessage) {
-        try (Socket socket = new Socket(loggerIpAddress2, SystemSetup.port);
+        try (Socket socket = new Socket(SystemSetup.loggerConnectionIPAddress, SystemSetup.port);
              ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
             oos.writeObject(logMessage);
         } catch (IOException e) {

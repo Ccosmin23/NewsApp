@@ -27,7 +27,7 @@ public final class RingManager {
 
     public RingManager() {
         this.heartbeatTimer = new Timer();
-//        startHeartbeat();
+        startHeartbeat();
     }
 
     public void start() throws IOException, ClassNotFoundException {
@@ -103,7 +103,7 @@ public final class RingManager {
 
     private void getNodCurent(ObjectOutputStream oos) throws IOException {
         if (nodCurrent != null) {
-            System.out.println("avem nodul curent cu adresa IP = " + nodCurrent.getAdresaPersonala());
+//            System.out.println("avem nodul curent cu adresa IP = " + nodCurrent.getAdresaPersonala());
             oos.writeObject(nodCurrent.getAdresaPersonala());
         } else {
             System.out.println("nu avem nod curent");
@@ -112,7 +112,7 @@ public final class RingManager {
 
     private void getNodUrmator(ObjectOutputStream oos) throws IOException {
         if (nodUrmator != null) {
-            System.out.println("avem un nod urmator care are adresa IP = " + nodUrmator.getAdresaPersonala());
+//            System.out.println("avem un nod urmator care are adresa IP = " + nodUrmator.getAdresaPersonala());
             oos.writeObject(nodUrmator.getAdresaPersonala());
             selectNewSuccessor();
 
@@ -145,21 +145,13 @@ public final class RingManager {
 
             if (getNodUrmator() != null) {
                 nextNode = getNodUrmator();
-            } else {
-                nextNode = listOfBrokers.get(0).getAdresaPersonala();
+                send(nextNode);
+                selectNewSuccessor();
             }
 
-            //doar pentru teste
-//            if (!InetAddress.getLocalHost().getHostAddress().equals("192.168.30.10")) {
-//                send(InetAddress.getByName("192.168.30.10"));
-//                send(InetAddress.getByName("192.168.30.10"));
-//            }
-
-            send(nextNode);
-            selectNewSuccessor();
-
         } catch (Exception e) {
-            LoggerService.shared.sendLogToLogger2("Avem o eroare neasteptata in metoda heartbeat: " + e);
+            //aici intra in cazul in care nu avem conexiune intre noduri si se incerca un send() la fiecare heartbeat
+//            LoggerService.shared.sendLogToLogger2("Avem o eroare neasteptata in metoda heartbeat: " + e);
 //            e.printStackTrace();
         }
     }
@@ -186,6 +178,9 @@ public final class RingManager {
             socketComuicare.close();
             objectOutputStream.close();
             objectInputStream.close();
+
+            // asignam nodUrmator la nodCurent ca sa verificam circular conexiunea intre noduri
+            nodCurrent = nodUrmator;
 
         } catch (IOException e) {
             // aici avem eroare de Connection refused
